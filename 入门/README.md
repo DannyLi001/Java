@@ -179,6 +179,10 @@ if (Math.abs(a - b) < 0.001) {
 }
 ```
 
+<u>为啥有时会出现 4.0 - 3.6 = 0.40000001 这种现象？</u>
+
+- 由于浮点计算的精度问题引起. 浮点数是二进制, 无法精准表达十进制. 在浮点数计算时,会出现误差.
+
 ### Java API
 
 #### Java 类的组织形式
@@ -265,6 +269,31 @@ int m = 100;
 System.out.println((char)m);
 ```
 
+### String和基础数据类型的转换
+
+```java
+//基本数据类型 -> String
+int n1 = 100;
+String s1 = n1 + "";
+
+//String -> 基本数据类型
+String s2 = "123";
+int n2 = Integer.parseInt(s2);
+String s3 = "12.3";
+double d1 = Double.parseDouble(s3);
+```
+
+#### 注意
+
+1. string转基本类型时, 要确保转出的有效性. 将"hello"转成整数会报错.
+2. 如果格式不正确, 会抛出异常, 程序终止. 可以编译, 无法运行
+
+
+
+
+
+
+
 
 
 
@@ -290,6 +319,7 @@ System.out.println((char)m);
 1. 为什么重写 equals 还要重写 hashcode？
 2. == 和 equals 比较的区别
 3. 为啥有时会出现 4.0 - 3.6 = 0.40000001 这种现象？
+   - 由于浮点计算的精度问题引起. 浮点数是二进制, 无法精准表达十进制. 在浮点数计算时,会出现误差.
 4. final 关键字的作用
 5. 介绍 Java 的集合类
 6. ArrayList 和 LinkedList 的区别
