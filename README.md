@@ -64,13 +64,91 @@ public class Hello {
 1. 将.class文件装载到JVM执行
 2. 修改.java文件后需要重新编译
 
+### 转义字符
 
+```java
+public class ChangeChar {
+	public static void main(String[] args) {
+		// \t: 一个制表位,实现对齐功能
+		System.out.println("1\t2\t3");
+		// \n: 换行符
+		System.out.println("1\n2\n3");
+		// \\: 一个\
+		System.out.println("\\1\\2\\3");
+		// \r: 一个回车			输出: 32
+		System.out.println("12\r3");
+	}
+}
+```
 
+### 文档注释
 
+注释内容可以被JDK提供的工具javadoc所解析，生成一套以网页文件形式体现的该程序的说明文档
 
+```java
+/**
+ * @author Danny
+ * @version 1.0
+*/
+public class Comment {
+	public static void main(String[] args){
+		//
+	}
+}
+```
 
+指令：`javadoc -d 文件夹 -... -... Comment.java`
 
+### 代码规范
 
+- 类, 方法的注释使用文档注释
+- 非javadoc的注释是给代码维护者看的, 重点告诉读者为什么这么写, 如何修改, 注意什么
+
+### DOS
+
+- disk operating system 磁盘操作系统
+
+#### 指令
+
+- dir
+- cd (cd..     cd \)
+- tree
+- cls
+- exit
+- md
+- rd
+- copy
+- del
+- echo (输入内容到文件)
+- type
+- move (剪切)
+
+### 数据类型
+
+- 基本数据类型	
+
+  - 数值型 [字节数]
+    - 整数
+      - byte[1], short[2], int[4], long[8]
+    - 浮点
+      - float[4], double[8]
+  - 字符
+    - char[2]
+  - 布尔
+    - boolean[1]
+
+- 引用数据类型
+
+  - 类 class
+  - 接口 interface
+
+  - 数组 []
+
+##### 注意
+
+声明long型常量需后加 'l' 或者 'L'
+
+1byte = 8bit
 
 
 
