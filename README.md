@@ -31,6 +31,8 @@
 - JRE = JVM + Java核心类库
 - 如果只想运行java的.class文件, 只需JRE
 
+---
+
 ### Hello.java
 
 ```java
@@ -64,7 +66,9 @@ public class Hello {
 1. 将.class文件装载到JVM执行
 2. 修改.java文件后需要重新编译
 
-### 转义字符
+---
+
+### 转义字符 ChangeChar.java
 
 ```java
 public class ChangeChar {
@@ -81,7 +85,7 @@ public class ChangeChar {
 }
 ```
 
-### 文档注释
+### 文档注释 Comment.java
 
 注释内容可以被JDK提供的工具javadoc所解析，生成一套以网页文件形式体现的该程序的说明文档
 
@@ -103,6 +107,8 @@ public class Comment {
 
 - 类, 方法的注释使用文档注释
 - 非javadoc的注释是给代码维护者看的, 重点告诉读者为什么这么写, 如何修改, 注意什么
+
+---
 
 ### DOS
 
@@ -155,6 +161,123 @@ public class Comment {
 字节数大的不能往小的装 (eg. int a = 2L		float a = 1.1)
 
 科学计数法: 1.1e-2
+
+小数计算: 
+
+```java
+double a = 2.7;
+double b = 8.1 / 3;
+System.out.println(a); // 2.7
+System.out.println(b); // 2.699999999...
+// 对运算结果是小数 进行相等判定时,需注意
+if (a == b) {
+	...不会运行
+}
+// 应该
+if (Math.abs(a - b) < 0.001) {
+	do...
+}
+```
+
+### Java API
+
+#### Java 类的组织形式
+
+JDK ->  包 -> 接口 / 类 / 异常 -> 字段 / 构造器(构造方法) / 成员方法 
+
+可以通过包 -> 类 -> 方法的形式在API文档中找到相关使用方法, 或者直接搜索
+
+### 字符类型
+
+#### 本质
+
+- 储存: 'a' -> 码值97 -> 二进制 -> 储存
+- 读取: 二进制 -> 97 -> 'a' -> 显示
+
+#### 编码表
+
+1. ASCII (一个字节表示, 一共128字符, 一个字节可以表示256字符,只用了128个)
+2. Unicode (固定大小的编码, 两个字节表示字符, 字母和汉字都是两个字节)
+3. utf-8 (大小可变的编码, 字母一个字节, 汉字三个字节)
+4. gbk (可以表示汉字, 而且范围广, 字母1字节, 汉字2字节)
+
+---
+
+### 基础数据类型转换 Convert.java
+
+1. 精度小的类型自动转换为精度大的数据类型, 这就是**自动类型转换**
+
+   - char -> int -> long -> float -> double
+
+   - byte -> short -> int ...
+
+2. 当多种类型数据混合计算时,系统将首先自动将所有数据转换成容量最大的数据类型, 然后计算
+
+3. 当把精度大的数据赋值给精度小的数据时, 会报错, 反之自动转换
+
+4. byte,short 和char之间不能相互自动转换
+5. byte, short, char 三者可以计算, 但首先转换为int类型
+6. boolean不参与转换 (在java中, boolean的值为true or false, 不是 0 或者 1)
+
+```java
+int n1 = 10;
+// 当多种类型数据混合计算时,系统将首先自动将所有数据转换成容量最大的数据类型, 然后计算
+float d1 = n1 + 1.1; // 错误 计算结果是double
+double d1 = n1 + 1.1;
+float d1 = n1 + 1.1F;
+
+// 当把精度大的数据赋值给精度小的数据时, 会报错, 反之自动转换
+int n2 = 1.1 // 错误
+
+// 当把数赋给byte时,先判断数值是否在byte范围内,如果是就可以
+byte b1 = 10; // 对
+
+int n2 = 1;
+byte b2 = n2; // 错误 变量赋值,判断类型
+
+// byte,short 和char之间不能相互自动转换
+char c1 = b1; // 错误
+
+// byte, short, char 三者可以计算, 但首先转换为int类型
+byte b2 = 1;
+short s1 = 1;
+short s2 = b2 + s1; //错误
+byte b4 = b2 + b3; // 错误
+```
+
+#### 强制转换 ForceConvert.java
+
+1. 当进行数据的大小从 大 -> 小, 就需要使用强制转换
+2. 只针对最近的操作数有效
+3. char可以保存int的常量值, 但不能保存int的变量值, 需强转
+4. byte和short进行运算是当int处理
+
+```java
+//只针对最近的操作数有效
+// int x = (int)10 * 3.5 - 5; 错误
+int x = (int)(10 * 3.5 - 5);
+System.out.println(x);
+
+// char可以保存int的常量值, 但不能保存int的变量值, 需强转
+char c1 = 100;
+int m = 100;
+// char c2 = m; // 错误
+System.out.println((char)m);
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
