@@ -146,15 +146,15 @@ public class Comment {
 
 ##### 注意
 
-声明long型常量需后加 'l' 或者 'L'
+整数型常量(默认值)为int. 声明long型常量需后加 'l' 或者 'L'.
 
 1byte = 8bit
 
+浮点型常量(默认值)为double, 声明floaf后需加 'f' 或者 'F'
 
+字节数大的不能往小的装 (eg. int a = 2L		float a = 1.1)
 
-
-
-
+科学计数法: 1.1e-2
 
 
 
