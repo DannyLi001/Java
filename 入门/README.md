@@ -541,13 +541,108 @@ public class BreakDetail {
 }
 ```
 
+---
 
+### 数组
 
+eg. `int[] nums = {1, 2, 3, 4};`(静态初始化)
 
+创建空数组: `int nums[] = new int[需要大小];`
 
+#### 动态初始化
 
+`int[] a`
 
+`a = new int[3]`
 
+#### 注意
+
+- 数组里的内容是否可以自动转换为数组的类型
+- 数组中的元素可以是任何数据类型, 包括引用类型
+- 数组创建后, 默认值为0, false, String null 
+- 数组属引用类型, 数组型数据是对象
+
+```java
+int[] arr1 = {1, 2, 3};
+int[] arr2 = arr1;
+arr2[0] = 0; // arr1 = {0, 2, 3}
+```
+
+数组在默认情况下是引用传递, 赋的值是地址, 赋值方式是引用赋值
+
+#### 引用传递 vs 值传递
+
+基本类型数据, 在jvm内存中, 放在栈
+
+数组在栈中储存的是地址, 该数组的元素储存在堆里的相应地址里
+
+#### 数组拷贝
+
+`int[] arr1 = {1,2,3};`
+
+`int[] arr2 = new int[arr1.length]`
+
+然后对arr1遍历, 赋值到arr2
+
+#### 数组反转
+
+```java
+int[] arr1 = {1,2,3,4,5,6,7,8,9};
+for(int i = 0; i < arr1.length / 2; i++){
+    tmp = arr1[i];
+    arr1[i] = arr1[arr1.length - 1 - i];
+    arr1[arr1.length - 1 - i] = tmp;
+}
+```
+
+#### 数组扩容
+
+```java
+int[] arr1 = {1, 2, 3, 4, 5, 6, 7};
+int[] arr2 = new int[arr1.length + 1];
+for(int i = 0; i < arr1.length; i++) {
+    arr2[i] = arr1[i];
+}
+arr2[arr2.length - 1] = 8;
+arr1 = arr2;
+```
+
+#### 数组缩减
+
+```java
+int[] arr1 = {1, 2, 3, 4, 5, 6, 7};
+int[] arr2 = new int[arr1.length - 1];
+for(int i = 0; i < arr2.length; i++) {
+    arr2[i] = arr1[i];
+}
+arr1 = arr2;
+```
+
+---
+
+### 排序
+
+#### 内部排序
+
+将需要处理的所有数据加载到内部储存其中进行排序
+
+#### 外部排序
+
+数据量过大, 无法全部加载到内存中, 需要借助外部储存进行排序
+
+#### 冒泡排序
+
+```java
+for(int i = arr1.length - 1; i > 1; i--) {
+    for(int j = 0; j < i - 1; j++) {
+        if(arr1[j] > arr1[j + 1]){
+            int tmp = arr1[j];
+            arr1[j] = arr1[j + 1];
+            arr1[j + 1] = tmp;
+        }
+    }
+}
+```
 
 
 
