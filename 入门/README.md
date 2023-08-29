@@ -413,6 +413,8 @@ public class Input {
 }
 ```
 
+接收字符: `char c1 = myScanner.next().charAt(0);`
+
 ### 位运算
 
 - 按位取反
@@ -434,9 +436,56 @@ public class Input {
 7. 计算机运算时, 都以<u>补码方式来运算</u>
 8. 看运算结果时, 看原码
 
+---
 
+### if-else IfElse.java
 
+`if (a = false)`可以编译成功, 并且将a赋值为false. if中的判断也为false
 
+### switch
+
+```java
+switch(表达式) {
+	case 常量1:
+		...
+		break;
+	case 常量2:
+		...
+		break;
+	...
+	default:
+		...
+		break;(optional)
+}
+```
+
+switch 是一个关键字
+
+退出switch需要使用break.
+
+如果没有break, 直接执行下一个case里的代码. (穿透)
+
+#### 注意
+
+- 表达数据类型需要和case常量类型一致, 或者是可以自动转换成相互比较的类型 (eg. 输入是字符, 常量是int)
+- 表达式中的返回值必须是: byte, short, int, char, enum[枚举], String
+- case子句中的值必须是常量,不能是变量
+- default是optional, 没有default且没有匹配case, 不进行任何执行
+- break用来跳出switch, 如果没有, 将执行之后的case直到break或结尾
+
+#### switch or if
+
+1. 如果判断的具体条件不多, 且符合byte, short, in, char, enum, String 建议使用switch
+2. 对区间判断, 对结果为boolean类型判断, 使用if
+
+### For循环
+
+`for(... ; ... ; ...)`
+
+- 初始化和变量迭代可以写在别的地方, 但两边分号不能省略
+
+- `for(;;)`无限循环
+- 可以有多个初始化和多个迭代语句
 
 
 
