@@ -11,6 +11,8 @@
   - 解释性语言: javascript, PHP, java	编译性语言:c/c++
   - 区别是: 解释性语言,编译后的代码,不能被机器直接执行,需要解释器. 编译性语言,编译后代码可以直接被执行
 
+---
+
 ### Java运行机制与运行过程
 
 - **JVM**(Java virtual machine) Java虚拟机
@@ -85,6 +87,8 @@ public class ChangeChar {
 }
 ```
 
+---
+
 ### 文档注释 Comment.java
 
 注释内容可以被JDK提供的工具javadoc所解析，生成一套以网页文件形式体现的该程序的说明文档
@@ -128,6 +132,8 @@ public class Comment {
 - echo (输入内容到文件)
 - type
 - move (剪切)
+
+---
 
 ### 数据类型
 
@@ -182,6 +188,8 @@ if (Math.abs(a - b) < 0.001) {
 <u>为啥有时会出现 4.0 - 3.6 = 0.40000001 这种现象？</u>
 
 - 由于浮点计算的精度问题引起. 浮点数是二进制, 无法精准表达十进制. 在浮点数计算时,会出现误差.
+
+---
 
 ### Java API
 
@@ -287,6 +295,152 @@ double d1 = Double.parseDouble(s3);
 
 1. string转基本类型时, 要确保转出的有效性. 将"hello"转成整数会报错.
 2. 如果格式不正确, 会抛出异常, 程序终止. 可以编译, 无法运行
+
+---
+
+### 运算符
+
+```java
+System.out.println(10.0 / 4); // 2.5
+double d = 10 / 4; // 2.0
+// %的本质，a % b = a - (int)a / b * b
+System.out.println(-10 % 3); // = -1
+System.out.println(10 % -3); // = 1
+System.out.println(-10 % -3); // = -1
+```
+
+前++：++i先自增后赋值
+
+后++：i++先赋值后自增
+
+i = i++的结果是什么？为什么？
+
+- 规则使用临时变量：`tmp = i; i = i + 1; i = tmp;`
+- i = 1
+
+i = ++i 的结果是什么？为什么？
+
+- 规则使用临时变量：` i = i + 1; tmp = i; i = tmp;`
+- i = 2
+
+#### 逻辑运算符
+
+```java
+int a = 4; int b = 9;
+
+// 对于&&短路与，如果第一个条件为false, 后面不在判断
+if (a < 1 && ++b < 50) {
+	will not do...
+}
+System.out.println(a + " " + b); // a = 4, b = 9
+
+// 对于&逻辑与，如果第一个条件为false, 后面也会继续判断
+if (a < 1 & ++b < 50) {
+	will not do...
+}
+System.out.println(a + " " + b); // a = 4, b = 10
+```
+
+- 短路或 “||” 和逻辑或 “|” 同理
+
+##### 逻辑异或 ^
+
+- a^b，当a和b不同时，结果为true
+
+##### 赋值运算符
+
+复合赋值运算符会进行类型转换
+
+```java
+byte b = 3;
+b += 2; // b = (byte)(b + 2)
+b ++; // 同理
+```
+
+##### 三元运算符 ? :
+
+表达式1和2要为可以赋给接收变量的类型(或可自动转换)
+
+- eg. `int c = a > b ? 1.1: 2.4;`
+
+#### 运算符优先级
+
+1. (), {} 等
+2. 单目运行 ++ --
+3. 算数运算符
+4. 位移运算符
+5. 比较运算符
+6. 逻辑运算符
+7. 三元运算符
+8. 赋值运算符
+
+---
+
+### 标识符命名
+
+1. 包名: 多个单词组成时, 所有字母小写: aaa.bbb.ccc
+2. 类名/接口名: 多个单词组成时, 所有单词首字母大写: XxxYyyZzz (大驼峰)
+3. 变量名/方法名: 多个单词组成时, 第一个单词首字母小写, 后面单词首字母大写: xxxYyyZzz (小驼峰)
+4. 常量名: 所有字母大写, 多单词用下划线链接: XXX_YYY_ZZZ
+
+---
+
+### 键盘输入 Input.java
+
+```java
+import java.util.Scanner; // 表示将java.util下的Scanner类导入
+
+public class Input {
+	public static void main (String[] args) {
+		// 接收用户输入
+		// 步骤
+		// Scanner类表示 简单文本扫描器, 在java.util包
+		// 1. 引入/导入 Scanner类所在的包
+		// 2. 创建Scanner对象, new 创建一个对象
+		// myScanner 是Scanner类的对象
+		Scanner myScanner = new Scanner(System.in);
+
+		// 3. 接收用户输入, 使用相关方法
+		System.out.println("name");
+		String name = myScanner.next();
+		System.out.println("age");
+		int age = myScanner.nextInt();
+		System.out.println("salary");
+		double salary = myScanner.nextDouble();
+
+		System.out.println(name + " " + age + " " + salary);
+	}
+}
+```
+
+### 位运算
+
+- 按位取反
+- 按位与
+- 按位或
+- 按位异或
+
+#### 原码/反码/补码
+
+1. 0表示正数,1表示负数
+2. 正数原码/反码/补码一样
+3. 负数反码 = 原码符号位不变,其他取反
+4. 负数补码 = 它的反码 +1, 负数反码 = 负数补码 - 1
+   - -2原码: 1000 0010
+   - -2反码: 1111 1101
+   - -2补码: 1111 1110
+5. 0的反码补码都是0
+6. java中的数都是有符号的
+7. 计算机运算时, 都以<u>补码方式来运算</u>
+8. 看运算结果时, 看原码
+
+
+
+
+
+
+
+
 
 
 
