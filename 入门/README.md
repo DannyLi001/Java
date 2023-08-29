@@ -487,7 +487,59 @@ switch 是一个关键字
 - `for(;;)`无限循环
 - 可以有多个初始化和多个迭代语句
 
+---
 
+### break 跳转控制 BreakDetail.java
+
+- break语句出现多层嵌套的语句块中时, 可以通过标签指明要终止的是哪一层语句块
+
+  ```java
+  label1:{...
+  label2:		{...
+  label3: 		{...
+  					break label2;
+  				}
+  			}
+  		}
+  ```
+
+### equals
+
+- 用来比较字符串的内容
+
+```java
+name.equals("Danny");
+"Danny".equals(name); //推荐 可以避免空指针
+```
+
+<u>== 和 equals 比较的区别</u>
+
+1. ==用来判断两边是不是指向同一个内存地址, equals用来判断两边所指的内存空间的值是否相同
+2. ==是运算符号, equals是一个方法
+3. ==比equals运行速度快, 因为==只是比较引用
+
+---
+
+### continue 跳转控制
+
+- 类似与break的跳转控制
+
+```java
+public class BreakDetail {
+	public static void main(String[] args) {
+		label1:
+		for(int j = 0; j < 4; j++){
+			label2:
+				for(int i = 0; i < 10; i++){
+					if(i == 2){
+						continue label1;
+					}
+					System.out.println(i); // 01 01 01 01
+				}
+		}
+	}
+}
+```
 
 
 
@@ -521,6 +573,9 @@ switch 是一个关键字
 
 1. 为什么重写 equals 还要重写 hashcode？
 2. == 和 equals 比较的区别
+   1. ==用来判断两边是不是指向同一个内存地址, equals用来判断两边所指的内存空间的值是否相同
+   2. ==是运算符号, equals是一个方法
+   3. ==比equals运行速度快, 因为==只是比较引用
 3. 为啥有时会出现 4.0 - 3.6 = 0.40000001 这种现象？
    - 由于浮点计算的精度问题引起. 浮点数是二进制, 无法精准表达十进制. 在浮点数计算时,会出现误差.
 4. final 关键字的作用
