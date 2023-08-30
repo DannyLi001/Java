@@ -547,6 +547,8 @@ public class BreakDetail {
 
 eg. `int[] nums = {1, 2, 3, 4};`(静态初始化)
 
+`String strs[] = new String[]{"a","b","c"};`
+
 创建空数组: `int nums[] = new int[需要大小];`
 
 #### 动态初始化
@@ -644,7 +646,93 @@ for(int i = arr1.length - 1; i > 1; i--) {
 }
 ```
 
+### 查找
 
+- 顺序查找
+
+```java
+String[] names = {"123","456","789"};
+String find = myScanner.next();
+int index = -1;
+for(int i = 0; i < names.length; i++) {
+	if(names[i].equals(find)){
+        do ... // 找到了
+        index = 1;
+        break;
+    }
+}
+if(index == -1){
+    //没找到
+}
+```
+
+- 二分查找
+
+### 二维数组
+
+`int[][] arr = {{0,0,0,0,0},{1,1,1,1,1},{2,2,2,2,2}};`
+
+#### 动态初始化
+
+`int[][] arr1 = new int[2][3];`
+
+#### 内存分布 YangHuiTri.java
+
+类似于数组的jvm内存分布, 栈中储存的是arr1在堆中的地址, 不同点是在堆中的arr1相应地址储存的是接下来每一列的地址(eg. arr1[0]的地址), 通过这些地址可以在堆中找到每一列的元素.
+
+![二维数组内存中存在形式](C:\Users\Danny\Desktop\学习资料\Java\入门\img\二维数组内存中存在形式.jpg)
+
+```java
+int[][] arr1 = new int[3][];
+for(int i = 0; i < arr1.length; i++) {
+    arr[i] = new int[i+1];
+    ... // 赋值
+}
+```
+
+#### 练习
+
+```
+int[] x,y[];
+
+x[0] = y; // 错误 int[][] -> int[]
+y[0] = x; // 正确 int[] -> int[]
+y[0][0] = x; // 错误 int[] -> int
+x[0][0] = y; // 错误 无法访问x[0][0]
+y[0][0] = x[0]; // 正确 int -> int
+x = y; // 错误 int[][] -> int[]
+```
+
+---
+
+### 类与对象 OOP Object.java
+
+解决问题:
+
+1. 单独变量? 不利于数据管理
+2. 数组? 数据类型体现不出来, 下标与内容关系不明确, 不能体现类的行为
+
+对象是类下面的具体个例: 如猫为类, 但是花猫为一个猫的对象
+
+```java
+class Cat {
+	String name;
+	int age;
+	String color;
+	double weight;
+}
+// main
+Cat cat1 = new Cat();
+cat1.name = "miao";
+cat1.age = 3;
+...
+```
+
+#### 对象的存在形式
+
+创建对象后, 对象的变量名在栈中指向一个地址, 相同地址在堆中储存对象的数据, 如果数据为基础类型数组, 则储存在堆中对象地址下, 如果为引用类型, 则堆中储存一个方法区地址, 该地址在方法区的常量池中. 在常量池相同地址里储存引用类型数据.
+
+![对象在内存中的存在形式](C:\Users\Danny\Desktop\学习资料\Java\入门\img\对象内存中存在形式.jpg)
 
 
 
