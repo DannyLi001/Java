@@ -1022,7 +1022,126 @@ class T{
 
 只写 `new Test()` 为匿名对象, 使用后就不能使用
 
+### IDEA IDE快捷键
 
+- ctrl + y：删除当前这行
+- ctrl + d：复制当前这行
+- ctrl + alt + l：自动对齐
+- .var: 自动补全对象创建
+- alt + insert: 生成构造器
+- ctrl + H: 查看光标所指类的继承关系
+
+### 包
+
+- 区分相同名字的类
+- 当类很多时，可以很好的管理类
+- 控制访问范围
+
+#### 基本语法
+
+`package com.hspedu;`
+
+1. package 关键字, 表示打包
+2. com.hspedu 包名
+
+#### 包的本质
+
+实际上就是创建不同的文件夹来保存类文件
+
+![包的本质](.\img\Package_Show.jpg)
+
+#### 包的命名
+
+规则:
+
+- 只能包含数字, 字母, 下划线, 小圆点., 但不能用数字开头, 不能是关键字或保留字
+
+规范:
+
+- 小写字母 + 小圆点
+- com.公司名.项目名.业务模块名
+
+#### 常用的包
+
+- java.lang.* (基本包, 默认引入)
+- java.util.* (系统提供的工具包)
+- java.net.* (网络包, 网络开发)
+- java.awt.* (做页面开发, GUI)
+
+#### 注意
+
+```java
+// 建议只导入需要的类
+//import java.util.Scanner; // 引入java.util 包下的Scanner
+//import java.util.*; // 将java.util 包下的所有类都引入
+
+// package 用来声明当前类所在的包, 需要放在最上面
+// 一个类中最多一句package
+package com.hspedu.pkg;
+
+//import 位置放在package下面, 类定义前面, 多个import没有顺序要求
+import java.util.Scanner;
+```
+
+### 访问修饰符
+
+四种访问控制修饰符号, 用于控制方法和属性的访问权限
+
+1. 公开级别: public
+2. 受保护级别: protected, 对子类和同一个包中的类开放
+3. 默认级别: 没有修饰符号, 向同一个包的类开放
+4. 私有级别: private, 只对类本身可以访问, 不对外公开
+
+| 访问级别 | 访问控制修饰符 | 同类 | 同包 | 子类 | 不同包 |
+| -------- | -------------- | ---- | ---- | ---- | ------ |
+| 公开     | public         | ✔    | ✔    | ✔    | ✔      |
+| 受保护   | protected      | ✔    | ✔    | ✔    | ❌      |
+| 默认     | N/A            | ✔    | ✔    | ❌    | ❌      |
+| 私有     | private        | ✔    | ❌    | ❌    | ❌      |
+
+#### 注意
+
+1. 修饰符可以用来修饰类中的属性, 成员方法以及类
+
+2. 只有默认和public才能修饰类! 
+3. 成员方法的访问规则和属性一样
+
+### 封装 encapsulation
+
+把抽象出的数据(属性)和对数据的操作(方法)封装在一起, 数据被保护在内部, 程序的其他部分只能通过被授权的操作(方法)才能对数据进行操作
+
+#### 好处
+
+- 隐藏实现细节
+- 可以对数据进行验证, 保证安全合理
+
+#### 实现步骤 com.hspedu.encap: Encapsulation01.java
+
+1. 将属性私有化 private
+2. 提供一个公共的set方法, 用于对属性判断并赋值
+3. 提供一个公共的get方法, 用于获取属性的值
+
+```java
+class Person {
+    public String name;
+    private int age;
+    private double sal;
+	
+	public setName(String name){...}
+    public getName(){...}
+	...
+}
+```
+
+#### 封装与构造器结合
+
+```java
+public Person(String name, int age, double sal) {
+    setName(name);
+    setAge(age);
+    setSal(sal);
+}
+```
 
 
 
