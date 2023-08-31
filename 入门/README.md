@@ -680,7 +680,7 @@ if(index == -1){
 
 类似于数组的jvm内存分布, 栈中储存的是arr1在堆中的地址, 不同点是在堆中的arr1相应地址储存的是接下来每一列的地址(eg. arr1[0]的地址), 通过这些地址可以在堆中找到每一列的元素.
 
-![二维数组内存中存在形式](.\2Dlist_JVM_Show.jpg)
+![二维数组内存中存在形式](.\img\2Dlist_JVM_Show.jpg)
 
 ```java
 int[][] arr1 = new int[3][];
@@ -715,24 +715,148 @@ x = y; // 错误 int[][] -> int[]
 对象是类下面的具体个例: 如猫为类, 但是花猫为一个猫的对象
 
 ```java
-class Cat {
-	String name;
-	int age;
-	String color;
-	double weight;
-}
 // main
 Cat cat1 = new Cat();
 cat1.name = "miao";
 cat1.age = 3;
-...
+
+class Cat {
+    // 属性/成员变量
+    // 也可以为引用数据类型
+	String name;
+	int age;
+	char[] color;
+	double weight;
+}
 ```
 
 #### 对象的存在形式
 
 创建对象后, 对象的变量名在栈中指向一个地址, 相同地址在堆中储存对象的数据, 如果数据为基础类型数组, 则储存在堆中对象地址下, 如果为引用类型, 则堆中储存一个方法区地址, 该地址在方法区的常量池中. 在常量池相同地址里储存引用类型数据.
 
-![对象在内存中的存在形式](.\Object_JVM_Show.jpg)
+在创建对象的时候, 类的信息会加载到方法区
+
+![对象在内存中存在形式](.\img\Object_JVM_Show.jpg)
+
+如果只是声明的话, 不会分配空间 `Cat cat;`
+
+#### Java内存结构分析 (创建对象流程)
+
+- 栈: 一般存放基本数据类型(局部变量)
+
+- 堆: 存放对象
+
+- 方法区: 常量池 (常量, 比如字符串), 类加载信息
+
+1. 先加载Cat类信息 (属性和方法信息只会加载一次)
+2. 在堆中分配空间, 进行默认初始化
+3.  把地址赋给cat, cat就指向对象
+4. 进行指定初始化, 比如 cat.age = 12;
+
+#### 类的成员方法
+
+成员方法的创建:
+
+```java
+// main
+Person p1 = new Person();
+p1.speak();
+
+class Person {
+	String name;
+	int age;
+
+	// speak 方法名 	() 形参列表
+	public int speak(int i, int j) {
+		System.out.println(i + j);
+        return i + j;
+	}
+}
+```
+
+##### 方法的调用机制
+
+![成员方法在内存中的形式](.\img\OOPMethod_JVM_Show.jpg)
+
+创建对象如之前的对象在JVM内存的存在形式一样, 当执行到成员方法时, 会在栈中自动开辟一个独立空间. 这个空间运行成员方法中的指令. 当返回主函数后, 该独立空间会被释放. (主函数同理 第5点)
+
+##### 方法使用细节
+
+1. 如果想要返回多个返回值，使用数组返回
+2. 返回类型可以为任何类型
+3. 如果有返回数据类型，必须要有return + 值，而且两者的类型一直或兼容
+4. 使用驼峰命名法(getSum)
+5. 方法体里不能再定义方法
+
+```java
+class A {
+	public void f1() {
+		public void f2()... //错误
+    }
+}
+```
+
+6. 同一类中的方法调用：直接调用即可
+
+```java
+class B{
+	public void f1(){}
+	public void f2(){
+		f1();
+	}
+}
+```
+
+7. 跨类中的方法A类调用B类方法：需要通过创建对象调用
+
+```java
+class A {
+	public void f1(){}
+}
+class B {
+	public void f2(){
+		A tmp = new A();
+		tmp.f1();
+	}
+}
+```
+
+8. 跨类的方法调用和访问修饰符相关
+
+#### 克隆对象 CopyObj.java
+
+```java
+class Person {
+	String name;
+	int age;
+}
+class Tool {
+	public Person copy(Person p) {
+		Person newp = new Person();
+		newp.name = p.name;
+		newp.age = p.age;
+		return newp;
+	}
+}
+```
+
+### 递归执行机制
+
+![递归在内存中的形式](.\img\Recursion_JVM_Show.jpg)
+
+每次递归将会开辟一个新的栈空间，知道递归判定失效. 每层递归结束后会返回到上层递归并执行之后指令。
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
