@@ -846,13 +846,181 @@ class Tool {
 
 每次递归将会开辟一个新的栈空间，知道递归判定失效. 每层递归结束后会返回到上层递归并执行之后指令。
 
+#### 注意
 
+1. 执行一个方法时，就创建一个新的受保护的独立空间
+2. 方法局部变量是独立的
+3. 如果使用的是引用类型变量，会共享引用类型数据
+4. 递归必须向退出递归的条件逼近，否则会死循环
+5. 当一个方法执行完毕，返回到调用他的方法
 
+#### 斐波那契数 RecursionFibonacciSeq.java
 
+```java
+public int cal(int i) {
+    if (i < 1){
+        return 0;
+    } else {
+        if(i == 1 || i == 2) {
+            return 1;
+        } else {
+            return cal(i - 1) + cal(i - 2);
+        }
+    }
+}
+```
 
+### 方法重载
 
+允许同一类中，多个同名方法的存在，但要求形参表不一致
 
+```java
+class MyCal {
+    public int calculate(int n1, int n2){...}
+    public double calculate(int n1, double n2){...}
+    public double calculate(double n1, int n2){...}
+    public int calculate(int n1, int n2, int n3){...}
+}
+```
 
+#### 注意
+
+- 方法名：必须相同
+
+- 形参列表：必须不同 (形参类型或个数或顺序, 至少有一种不同, 参数名无要求)
+
+- 返回类型: 无要求 (只是返回类型不同, 不会构成重载)
+
+### 可变参数
+
+允许将同一类中多个同名同功能但参数个数不同的方法, 封装成一个方法
+
+```java
+class VarParameter {
+	public int sum(int... nums) {	// nums可以当作数组操作
+		int res = 0;
+		for(int i = 0; i < nums.length; i++) {
+			res += nums[i];
+		}
+		return res;
+	}
+}
+```
+
+#### 注意
+
+- 可变参数的实参可以为数组	`v1.sum({1,2,3});`
+- 可变参数可以和普通类型的参数一起放在形参列表, 但必须保证可变参数在最后
+  - `public void f2(String str, double n1, double... nums);`
+
+- 一个形参列表中只能出现一个可变参数
+  - 错误: `public void f2(String... str, double... nums);`
+
+### 作用域
+
+- 主要的变量就是属性和局部变量
+  - 局部变量一般是指成员方法中定义的变量 (Cat类: cry)
+- 作用域的分类:
+  - 全局变量: 也就是属性, 作用域为整个类体 如Cat类: cry eat 等方法使用属性
+  - 局部变量: 也就是除了属性之外的其他变量, 作用域为定义它的的代码块中
+- 全局变量可以不赋值, 直接使用, 因为有默认值, 局部变量必须赋值后, 才能使用
+
+```java
+class Cat{
+    int num1; // 可以 默认为0
+	public void f1(){
+		int num2;
+		System.out.println(num2); // 无法编译 必须赋值;
+	}
+}
+```
+
+#### 注意
+
+- 属性和局部变量可以重名, 访问时遵循就近原则
+  - 成员方法中有定义相同变量名时, 方法内使用该变量值
+- 属性可以加修饰符, 局部变量不可以
+
+### 构造器 Constructor.java
+
+主要作用是完成堆新对象的初始化
+
+1. 方法名和类名一致
+2. 没有返回值
+3. 创建对象时, 系统自动调用该类的构造器完成初始化
+
+```java
+// main
+Person p1 = new Person("name", 12);
+
+class Person {
+    String name;
+    int age;
+    // 构造器没有返回值, 也不能写void
+    // 其他与成员方法一样
+    public Person(String pName, int pAge){
+        name = pName;
+        age = pAge;
+    }
+}
+```
+
+#### 注意
+
+1. 一个类可以定义多个不同的构造器, 即构造器重载
+2. 无法像成员方法一样在主程序调用构造器, 构造器为系统自动调用
+3. 可以用javap 反编译 .class -> .java
+4. 不写构造器, 系统会使用默认的无参构造器 (默认: Dog(){})
+
+#### 对象创建流程方向 JVM内存
+
+1. 在方法区加载类信息
+2. 在堆中开辟空间, 并进行默认初始化 (0 或 null)
+3. 根据类中的定义赋值
+4. 再根据构造器获取内容, 对上一步的值进行修改 (完成初始化)
+5. 最后再将堆中的地址传到栈
+
+### This关键字
+
+虚拟机会给每个对象分配this，代表当前对象
+
+```java
+class Person{
+    String name;
+    int age;
+    public Person(String name, int age){
+        this.name = name;
+        this.age = age;
+    }
+}
+```
+
+#### This 在JVM中的体现
+
+![This在内存中的形式](.\img\This_JVM_Show.jpg)
+
+- 可以使用 `dog1.hashCode()` 和 `this.hashCode()` 去检查两个对象在虚拟机里的地址是相同的
+  - hashCode() 是对地址进行哈希之后得到的整数, 并不是地址本身
+
+#### 注意
+
+1. This可以访问属性, 方法, 构造器
+2. 访问成员方法的语法:`this.方法名(参数列表);`
+3. 访问构造器语法: `this(参数列表)`
+   - 只能在构造器中使用 (**只能在构造器中访问另一个构造器**)
+   - 访问构造器语法: `this(参数列表)` **必须放置在第一条语句**
+
+```java
+class T{
+    public T(){
+        this("name",100);
+        ...
+    }
+    public T(String name, int age){...}
+}
+```
+
+只写 `new Test()` 为匿名对象, 使用后就不能使用
 
 
 
