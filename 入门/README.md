@@ -1143,6 +1143,106 @@ public Person(String name, int age, double sal) {
 }
 ```
 
+### 继承
+
+解决代码复用
+
+![继承的本质](.\img\Inheritance_Show.jpg)
+
+- 父类也叫超类
+
+```java
+public class Graduate extends Student{}
+```
+
+#### 注意
+
+1. 子类继承了所有属性和方法, 但私有属性和方法不能在子类直接访问, 要通过公共的方法访问
+2. 子类必须调用父类的构造器, 完成父类的初始化 (**先构造父类再构造子类**)
+3. 创建子类对象时, 不管使用子类哪个构造器, 默认情况下会去调用父类的无参构造器, 如果父类没有提供无参构造器, 则必须在子类的**构造器**中用`super()`去指定使用父类哪个构造器完成对父类的初始化, 否则编译不会通过.
+
+```java
+// 当父类有指定构造器:
+public Student(int age, double score) {
+    this.age = age;
+    this.score = score;
+}
+// 子类的构造器中指定
+public class Pupil extends Student{
+    public Pupil(int age, double score) {
+        super(age, score);
+    }
+}
+```
+
+4. 使用`super(参数列表)`去指定父类构造器
+5. `super`在使用的时候, 必须放在构造器的第一行
+6. `super()` 和 `this()` 都只能放在构造器第一行, 因此两个方法不能共存在一个构造器中
+7. 所有类都是Object类的子类, Object是所有类的基类
+8. 父类构造器的调用不限于直接父类, 将一直追溯到Object类
+   - 人话: 子类会先调用父类构造器, 知道调用到Object类
+9. 子类最多只能继承一个父类 (直接继承), **单继承机制**
+10. 子类和父类之间必须满足 is-a 的逻辑关系
+
+#### 继承的本质分析
+
+![继承在JVM中的体现](.\img\Inheritance_JVM_Show.jpg)
+
+注意:
+
+- 访问属性时, 按就近原则 (访问age -> 39, 访问hobby -> 旅游)
+- 如果按就近原则访问到的属性为private, 则编译报错
+- 如果没有找到, 则提示方法不存在
+
+```java
+class A{
+	A(){print("a");}
+	A(String name){print("a name");}
+}
+class B extends A{
+	B(){this("abc"); print("b");}
+	B(String name){print("b name");}
+}
+// main
+B b = new B(); // 输出: a, b name, b
+```
+
+### super 关键字
+
+super代表父类的引用, 用于访问父类的属性, 方法, 构造器
+
+```java
+public class A {
+	public int n1;
+	protected int n2;
+	int n3;
+	private int n4;
+	
+	public void f1(){}
+}
+class B extends A{
+    public B(){
+        super(); // super调用父类构造器
+    }
+	void print(){
+		super.f1(); // super调用父类方法
+		print(super.n1); // super调用父类属性(除了n4都可以)
+	}
+}
+```
+
+1. 调用父类的构造器的好处 - 分工明确, 父类属性由父类初始化, 子类属性由子类初始化
+2. 当子类中有和父类中的成员(属性和方法) 重名时, 访问父类的成员需要加通过`super`. 如果没有重名, super, this, 直接访问效果一样
+
+3. super的访问不限于直接父类, 根据就近原则可以访问到多个基类(上级类)
+
+| 区别点     | this                               | super                                  |
+| ---------- | ---------------------------------- | -------------------------------------- |
+| 访问属性   | 访问本类中属性, 没有往父类找       | 直接调用父类中的属性                   |
+| 调用方法   | 访问本类中方法, 没有往父类找       | 直接调用父类中的方法                   |
+| 调用构造器 | 调用本类构造器, 必须放在构造器首行 | 调用父类构造器, 必须放在子类构造器首行 |
+| 特殊       | 表示当前对象                       | 子类中访问父类对象                     |
+
 
 
 
