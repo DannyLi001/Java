@@ -1351,6 +1351,140 @@ class AA{}
 class BB extends AA{}
 ```
 
+#### 动态绑定机制 重要
+
+1. 当调用对象方法的时候，该方法会和该对象的内存地址/运行类型绑定
+2. 当调用对象属性时, 没有动态绑定机制, 哪里有声明, 哪里使用
+
+人话: 
+
+- 编译类型是父类, 运行类型是子类
+- 运行的时候, 先从子类中找方法, 如果找到就使用
+- 如果没找到, 并在父类中找到, 父类的方法中如果调用了子类里重写的别的方法, 那么就会运行子类中重写的方法.
+
+```java
+//main
+A a = new B();
+System.out.println(a.sum()); // 30
+System.out.println(a.sum1()); // 30
+
+class A {
+    int i = 10;
+    public int sum(){
+        return getI() + 10; // 这里的getI()调用的是子类中的方法
+    }
+    public int sum1() {
+        return i + 10; 
+    }
+    public int getI(){
+        return i;
+    }
+}
+class B extends A {
+    int i = 20;
+    
+    public int getI(){
+        return i; 
+    }
+    public int sum1() {
+        return i + 10; // 这里的i是20, 属性没有动态绑定机制
+    }
+}
+```
+
+#### 多态数组 PolyArray.java
+
+数组的定义类型为父类类型, 里面保存的实际元素类型为子类类型
+
+- 可以用instanceof去检查多态数组中每个元素的类型, 然后使用向下转型去分别访问子类中的独有方法
+
+### == 运算符
+
+== 和 equals 比较的区别?
+
+- == 是一个比较运算符
+  - 可以判断基本类型, 又可以判断引用类型
+  - 如果是基本类型, 判断的是 值 是否相等
+  - 如果是引入类型, 判断的是 地址 是否相等, 即判断是不是一个对象
+
+### equals 方法
+
+- equals只能判断引用类型
+- Obeject的equals方法默认是比较两个对象地址是否相等
+
+```java
+public boolean equals(Object obj) {
+    return (this == obj);
+}
+```
+
+```java
+String str1 = new String("123");
+String str2 = new String("123");
+// String 的equals重写过
+str1 == str2; // false
+str1.equals(str2); // true
+```
+
+#### 重写equals
+
+```java
+public boolean equals(Object obj){ // 这里的参数要是Object类
+    if(this == obj){
+        return true;
+    }
+    if(obj instanceof Person){
+        Person person = (Person) obj;
+        return name.equals(person.name) && age == person.age &&
+               sex == person.sex;
+    }
+    return false;
+}
+```
+
+`"hello" == new java.sql.Date(); //编译报错` 
+
+### hashCode
+
+- 提高具有哈希结构的容器效率
+- 两个引用, 如果指向的是同一个对象, 哈希值肯定一样
+- 两个引用, 如果指向的是不同对象, 哈希值不一样
+- 哈希值主要根据地址号来, 不能完全将哈希值等价于地址
+- 在集合中, 如果需要, hashCode会重写
+
+### toString
+
+打印对象信息
+
+重写可使用快捷键
+
+```java
+public String toString() { // 重写
+    return "Monster{" +
+            "name='" + name + '\'' +
+            ", job='" + job + '\'' +
+            ", sal=" + sal +
+            '}';
+}
+com.hspedu.object.Monster@b4c966a // 为重写前输出
+System.out.println(monster1); // 可以直接打印对象
+```
+
+### finalize
+
+- 当对象被回收时, 系统自动调用该对象的finalize方法, 子类可以重写该方法, 做一些释放资源的操作
+- 当某个对象没有任何引用时, jvm会认为这个对象是个垃圾对象, 就会使用垃圾回收机制来销毁对象, 在销毁前, 会调用finalize方法
+- 垃圾回收机制的调用由系统决定, 也可以通过`System.gc()`主动触发
+  - 实际开发中不会使用, 应付面试
+
+### 断点调试
+
+- 调试过程中是运行状态, 对象是运行类型来执行
+
+
+
+
+
 
 
 
@@ -1370,6 +1504,7 @@ class BB extends AA{}
 ### 经典面试题
 
 1. 为什么重写 equals 还要重写 hashcode？
+   - 如果重写equals, 那么equals就只是比较两边对象的地址是否相同
 2. == 和 equals 比较的区别
    1. ==用来判断两边是不是指向同一个内存地址, equals用来判断两边所指的内存空间的值是否相同
    2. ==是运算符号, equals是一个方法
