@@ -1496,17 +1496,209 @@ System.out.println(monster1); // 可以直接打印对象
 
 #### 注意
 
+1. 当我们需要让某个类的所有对象都共享一个变量时，就可以考虑使用类变量
+2. 类变量是该类所有对象共享的，实例变量是每个对象独有的
+3. 可以通过`类名.类变量`来访问
+4. 类变量是类加载时就初始化了, 可以不创建对象就使用类变量
+5. 类方法中无法使用和对象有关的关键字`this`和`super`
+6. 类方法只能访问静态变量或静态方法
+7. 普通成员可以访问静态和非静态成员
 
+```java
+// main
+Student.pay(100);
+Student name1 = new Student("name1");
+name1.pay(200);
+Student.show();
 
+class Student {
+    private String name;
+    private static double fee = 0;
 
+    public Student(String name) {
+        this.name = name;
+    }
+    //静态方法
+    public static void pay(double fee) {
+        Student.fee += fee;
+    }
+    public static void show(){
+        System.out.println(Student.fee);
+    }
+}
+```
 
+#### 使用场景
 
+如果希望不创建实例, 也可以调用某个方法. 把方法做成静态方法非常合适
 
+### main方法
 
+1. main方法是虚拟机调用
+2. 虚拟机需要调用类的main方法, 所以该方法的访问权限必须是public
+3. 虚拟机在执行main方法时不必创建对象, 所以必须是main方法必须是静态方法
+4. String[] args是java命令时传递给所有运行的类的参数
+   - `java 运行程序 参数1 参数2...`(eg. DOS控制台中)
 
+- 在main方法中, 可以直接调用main方法所在类的静态方法和静态属性
+- 但是不能直接访问该类中的非静态方法, 需要创建一个该类的对象, 然后通过对象去访问非静态方法
 
+### 代码块
 
+也叫初始化块, 属于类中的成员, 类似于方法, 将逻辑语句封装在方法体中, 通过{}包围起来. 不同点是没有方法名, 没有返回, 没有参数, 只有方法体. 而且不通过对象或类显示调用, 而是加载时, 或创建对象时隐藏调用
 
+```java
+class Movie {
+    private String name;
+    private double price;
+    private String director;
+    // 下面的所有构造器有相同的语句
+    // 这样代码会冗余
+    // 我们把相同的语句放到代码块中
+    // 不管调用哪个构造器创建对象, 都会先执行代码块的内容
+    // 代码块的优先级高于构造器
+    {
+        System.out.println("1");
+        System.out.println("2");
+        System.out.println("3");
+    }
+    // 构造器s...
+}
+```
+
+#### 注意
+
+- 修饰符(可选) 只能写static
+- 语句可以为任何逻辑语句
+- ;可以写上, 也可以省略
+
+1. static代码块的作用是对类进行初始化, 它随着**类的加载**而执行, 且只会执行一次. 而普通代码块每创建一个对象就会执行
+2. 类什么时候被加载 **重要**
+   1. 创建对象实例 (new)
+   2. 创建子类对象实例, 父类也会被加载
+   3. 使用类的静态成员时 (静态属性, 静态方法)
+
+3. 普通代码块, 在创建对象实例时, 会被隐式调用. 被创建一次, 就会调用一次. 如果**只是使用类的静态成员时, 普通代码块不会执行**
+4. 创建对象时, 在一个类调用顺序是: **重点**
+   1. 调用静态代码块和静态属性初始化 (如果有多个静态代码块和多个静态变量初始化, 则按顺序)
+   2. 调用普通代码块和普通属性的初始化 (如有多个, 按顺序)
+   3. 调用构造器
+
+```java
+// main
+A a = new A();
+
+class A {
+    public A(){
+		print("constructor");
+    }
+    {
+        print("code block 1")
+    }
+	private static int n1 = getN1();		// 1. getN1
+	static {								// 2. static code block 1
+		print("static code block 1");		// 3. code block 1
+	}										// 4. constructor
+	public static int getN1(){
+		print("getN1");
+		return 100;
+	}
+}
+```
+
+5. 构造器的最前面隐藏了super()和 调用普通代码块. 静态相关的代码块, 属性初始化, 在类加载时就执行完毕, 所有优先级高于构造器和普通代码块
+6. 创建一个子类对象时, 他们的静态代码块, 静态属性初始化, 普通代码块, 普通属性初始化, 构造方法的调用如下:
+   1. 父类的静态代码块和静态属性
+   2. 子类的静态代码块和静态属性
+   3. 父类的普通代码块和普通属性初始化
+   4. 父类的构造方法
+   5. 子类的普通代码块和普通属性初始化
+   6. 子类的构造方法
+
+7. 静态代码块只能直接调用静态成员, 普通代码块可以调用任意成员
+
+### 单例模式 (饿汉式和懒汉式)
+
+1. 采用一定的方法保证在整个软件系统中, 对某个类只能存在一个对象实例, 并且该类只提供一个取得其对象实例的方法
+   1. 饿汉式
+   2. 懒汉式
+
+- 饿汉式和懒汉式的实现
+  - 构造器私有化 -> 防止用户new
+  - 类的内部创建对象
+  - 向外暴露一个静态的公共方法
+
+```java
+// 饿汉式
+class GirlFriend{
+    private String name;
+    private static GirlFriend name1 = new GirlFriend("name1");
+    // 如何保证只能创建一个对象 饿汉式
+    // 1. 将构造器私有化
+    // 2. 在类内部直接创建
+    // 3. 提供一个公共的static方法, 返回GirlFriend对象
+    private GirlFriend(String name) {
+        this.name = name;
+    }
+
+    public static GirlFriend getInstance(){
+        return name1;
+    }
+}
+```
+
+```java
+// 懒汉式
+class Cat {
+    private String name;
+    private static Cat cat;
+    // 1. 构造器私有化
+    // 2. 定义一个static静态属性对象
+    // 3. 提供一个public的static方法, 可以返回一个Cat对象
+    // 4. 懒汉式 只有当用户使用getInstance时, 才会返回对象, 后面再次调用, 返回上次创建的
+    //		Cat对象从而保证了单例
+    private Cat(String name) {
+        this.name = name;
+    }
+    public static Cat getInstance(){
+        if(cat == null) {
+            cat = new Cat("cat1");
+        }
+        return cat;
+    }
+}
+```
+
+- 饿汉式 vs 懒汉式
+  - 主要区别在于创建对象的时机不同, 饿汉式是在类加载时就创建了对象实例, 懒汉式时在使用时才创建
+  - 饿汉式不存在线程安全问题, 懒汉式存在
+  - 饿汉式存在浪费资源的可能, 因为如果一个对象实例都没有使用, 饿汉式创建的对象就浪费了, 懒汉式是使用时才创建, 不存在这个问题
+
+---
+
+### final 关键字
+
+- 不希望类被继承时, 使用final修饰类
+- 不希望父类某个方法被子类覆盖, 使用final修饰方法
+- 不希望类的某个属性的值被修改, 用final修饰
+- 不希望某个局部变量被修改, 用final修饰
+
+#### 注意
+
+1. final修饰的属性叫常量, 一般用XXX_XXX来命名
+2. final修饰的属性在定义时, 必须赋初值, 且以后不能修改, 赋值可以在如下位置之一
+   1. 定义时
+   2. 构造器中
+   3. 代码块中
+3. 如果final修饰的属性是静态的, 则初始化的位置只能是
+   1. 定义时
+   2. 在静态代码块, 不能在构造器中
+4. final类不能继承, 但是可以实例化对象
+5. 如果类不是final类, 但含有final方法, 则该方法虽然不能重写, 但可以被继承
+6. 一般来说, 如果一个类已经是final类了, 就没必要再将方法修饰成final方法
+7. final不能修饰构造方法
+8. final和static搭配使用, 效率更高, 不会导致类加载 (编译器优化)
+9. 包装类(Integer, Double, Float等都是final类), String也是final类
 
 
 
@@ -1539,5 +1731,9 @@ System.out.println(monster1); // 可以直接打印对象
 3. 为啥有时会出现 4.0 - 3.6 = 0.40000001 这种现象？
    - 由于浮点计算的精度问题引起. 浮点数是二进制, 无法精准表达十进制. 在浮点数计算时,会出现误差.
 4. final 关键字的作用
+   - 不希望类被继承时, 使用final修饰类
+   - 不希望父类某个方法被子类覆盖, 使用final修饰方法
+   - 不希望类的某个属性的值被修改, 用final修饰
+   - 不希望某个局部变量被修改, 用final修饰
 5. 介绍 Java 的集合类
 6. ArrayList 和 LinkedList 的区别
