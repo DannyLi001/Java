@@ -1954,9 +1954,249 @@ class Outer{
 6. 外部其他类 ---访问---> 静态内部类
 7. 如果外部类和静态内部类的成员重名时, 默认遵循就近原则, 如果想访问外部类的成员, 则可以使用 (`外部类名.成员`) 访问
 
+### 枚举
+
+- 枚举是一组常量的集合
+- 属于一种特殊的类，里面只包含一组有限的特定的对象
+
+1. 自定义枚举
+
+```java
+class Season{
+    private String name;
+    private String desc;
+    // 1. 将构造器私有化
+    // 2. 去掉Setter
+    // 3. 在内部直接创建对象
+    // 4. 优化 加入final修饰符
+    public static Season SEASON1 = new Season("season1", "desc1");
+    public static Season SEASON2 = new Season("season2", "desc2");
+    public static Season SEASON3 = new Season("season3", "desc3");
+    public static Season SEASON4 = new Season("season4", "desc4");
+    private Season(String name, String desc) {
+        this.name = name;
+        this.desc = desc;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getDesc() {
+        return desc;
+    }
+}
+```
+
+- 对枚举对象使用`final static` 共同修饰, 实现底层优化 (无需加载类方法)
+- 枚举对象名通常使用全部大写
+
+2. enum关键字
+
+```java
+enum Season0 {
+    // 如果使用enum来实现枚举
+    // 1. 关键字enum代替class
+    // 2. 创建方法: 常量名(实参列表)
+    // 3. 如果有多个常量(对象) 使用, 号间隔
+    // 4. 如果使用enum, 要求将定义常量对象写在前面
+    SEASON1("season1", "desc1"),
+    SEASON2("season2", "desc2"),
+    SEASON3("season3", "desc3"),
+    SEASON4("season4", "desc4");
+    private String name;
+    private String desc;
 
 
+    private Season0(String name, String desc) {
+        this.name = name;
+        this.desc = desc;
+    }
 
+    public String getName() {
+        return name;
+    }
+
+    public String getDesc() {
+        return desc;
+    }
+}
+```
+
+1. 使用enum关键字开发枚举时, 默认会继承Enum类, 而且是一个final类
+2. 简写`常量名(实参列表)` 这里必须知道用的是哪个构造器
+3. 如果使用无参构造器创建枚举, 实参列表和小括号都可以省略
+
+#### enum常用方法
+
+1. name: 返回当前对象名, 子类中不能重写
+2. ordinal: 返回当前对象的位置号, 默认从0开始
+3. values: 返回当前枚举类中所有的常量
+4. valueOf: 将字符串转换成枚举对象, 要求字符串必须为已有的常量名, 否则报错
+5. compareTo: 比较两个枚举常量, 比较的是编号
+
+#### 注意
+
+1. 使用enum关键字后, 就不能继承其他类, 因为enum隐式继承Enum
+2. enum实现的枚举类, 可以实现接口
+
+### 注解
+
+1. 也被称为元数据, 用于修饰解释 包, 类, 方法, 属性, 构造器, 局部变量等数据信息
+2. 和注释一样, 不影响程序逻辑, 但注解可以被编译或运行, 相当于嵌入在代码中的补充信息
+3. javaSE的注解用于标记过时的功能, 忽略警告. javaEE的注解用于配置应用程序的任何切面
+
+注解Annotation前面增加@符号, 并把该annotation当成一个修饰符使用. 用于修饰它支持的程序元素
+
+1. @Override: 限定于方法, 重写父类方法
+2. @Dprecated: 表示某个程序元素已过时
+3. @SuppressWarnings: 抑制编译器警告
+
+#### @Override
+
+- @Override注解源码为: `@Target(ElementType.METHOD)` @Target是修饰注解的注解
+
+#### @Deprecated
+
+- 即不推荐使用, 但任然可以使用
+- 可以修饰方法, 类, 字段, 包, 参数 等
+- 可以做版本升级过度使用
+
+#### @SuppressWarning
+
+- 可以通过@SuppressWarning来抑制警告信息
+- 在{""}中, 可以写入想要抑制(不显示)的警告信息
+
+`@SuppressWarining({"all"})`
+
+- 作用范围是和放置的位置有关
+
+### 异常处理机制
+
+程序执行中发生的不正常情况叫"异常"
+
+- 主要分两类
+  - Error(错误): JVM无法解决的严重错误
+    - JVM系统内部错误
+    - 资源耗尽
+  - Exception
+    - 编程错误或偶然的外在因素导致的一般性问题
+    - 空指针访问
+    - 读取不存在文件
+    - 分为两大类
+      - 运行时异常
+      - 编译时异常
+
+#### 异常体系图
+
+![异常体系图](.\img\Throwable_Show.jpg)
+
+##### NullPointerException空指针异常
+
+- 需要对象的地方使用null时, 抛出异常
+
+##### ArithmeticException 数学运算异常
+
+- 当出现异常的运算条件时, 抛出异常
+
+##### ArrayIndexOutOfBoundsException 数组下标越界异常
+
+- 如果索引为负或大于等于数组大小, 抛出异常
+
+##### ClassCastException 类型转换异常
+
+- 试图将对象强转为不是实例的子类, 抛出异常
+
+##### NumberFormatException 数字格式不正确异常
+
+- 试图将字符串转成数值类型, 但字符串不符合格式时, 抛出异常
+
+#### 异常处理方式
+
+1. try-catch-finally
+   - 程序员捕获发生的异常并处理
+
+```java
+try{
+    // 可能有问题的代码
+} catch (Exception e){
+    // 捕获到的异常
+    // 1. 只有捕获到异常才运行
+    // 2. 将异常封装成Exception对象e
+    // 3. 得到异常后,程序员自己处理
+} finally{
+    // 不管有没有异常, 始终执行finally
+}
+```
+
+2. throws
+
+   将发生的异常抛出, 交给调用者来处理, JVM时最顶级的处理者
+
+   1. try-catch-finally 和 throws二选一
+   2. throws后面的异常类型可以是方法中发生的异常, 也可以是它的父类
+   3. throws关键字后也可以是异常列表, 即抛出多个异常
+
+##### 注意 (try-catch)
+
+1. 如果异常发生, 则异常发生后面的代码不会执行, 直接进入catch
+2. 如果没有异常发生, 不会进入catch
+3. 如果希望不管是否发生异常, 都执行某段代码, 使用finally
+4. 可以有多个catch语句, 捕获不同的异常. 要求父类异常在后, 子类在前.
+5. 可以进行`try-finally`配合使用, 相当于没有捕获异常. 因此程序会崩溃
+
+##### 注意(throws)
+
+1. 对于编译异常, 程序必须处理 try-catch 或 throws
+2. 对于运行异常, 程序中如果没有处理, 默认为throws
+3. 子类重写父类方法时, 要和父类抛出异常一致, 要么为父类抛出异常的类型子类
+
+#### 自定义异常
+
+- 自定义异常类名 继承Exception或RuntimeException
+- 继承Exception属于编译异常
+- 继承RuntimeException属于运行异常
+
+```java
+public static void main(String[] args) {
+    int age = 900;
+    if(!(age >= 18 && age <= 120)){
+        throw new AgeException("something");
+    }
+}
+class AgeException extends RuntimeException {
+    public AgeException(String message) {
+        super(message);
+    }
+}
+```
+
+一般继承RuntimeException, 如果定义为Exception那么调用throws
+
+#### throw vs throws
+
+|        | 意义                     | 位置       | 后面跟的东西 |
+| ------ | ------------------------ | ---------- | ------------ |
+| throws | 异常处理的一种方式       | 方法声明处 | 异常类型     |
+| throw  | 手动生成异常对象的关键字 | 方法体中   | 异常对象     |
+
+```java
+try {
+    if(args.length != 2){
+        throw new ArrayIndexOutOfBoundsException("something0");
+    }
+    int n1 = Integer.parseInt(args[0]);
+    int n2 = Integer.parseInt(args[1]);
+    double result = cal(n1, n2);
+    System.out.println(result);
+} catch (ArrayIndexOutOfBoundsException e) {
+    System.out.println(e.getMessage());
+} catch (NumberFormatException e){
+    System.out.println("something1");
+} catch (ArithmeticException e){
+    System.out.println("something2");
+}
+```
 
 
 
