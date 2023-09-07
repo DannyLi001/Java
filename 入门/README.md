@@ -2198,6 +2198,204 @@ try {
 }
 ```
 
+### 包装类
+
+正对八种基本数据类型相应的引用类型——包装类
+
+| 基本数据类型 | 包装类    |
+| ------------ | --------- |
+| boolean      | Boolean   |
+| char         | Character |
+| byte         | Byte      |
+| short        | Short     |
+| int          | Integer   |
+| long         | Long      |
+| float        | Float     |
+| double       | Double    |
+
+![包装类体系图](.\img\Wapper_Show.jpg)
+
+#### 装箱 和 拆箱
+
+装箱: 基本类型 -> 包装类型, 反之 拆箱
+
+```java
+public static void main(String[] args) {
+    // 手动装箱
+    int n1 = 100;
+    Integer integer = new Integer(n1);
+    Integer integer1 = Integer.valueOf(n1);
+    // 手动拆箱
+    int i = integer.intValue();
+
+    // jdk5.0后 自动装箱和自动拆箱
+    int n2 = 200;
+    // jdk5.0后 自动装箱 int -> Integer
+    Integer integer2 = n2; // 底层使用Integer.valueOf(n2);
+    // 自动拆箱
+    int n3 = integer2; // 底层integer.intValue();
+}
+```
+
+其他类新一样
+
+#### 包装类 int -> string
+
+```java
+Integer i2 = 100;
+String str1 = i + "";
+String str2 = i2.toString();
+String str3 = String.valueOf(n2);
+```
+
+#### 包装类 String -> int
+
+```java
+String str4 = "1234";
+Integer i3 = Integer.parseInt(str4);
+Integer i4 = new Integer(str4);
+```
+
+#### 注意
+
+```java
+public static void main(String[] args) {
+    Integer i = new Integer(1);
+    Integer j = new Integer(1);
+    System.out.println(i == j); // F	比较的是两个对象的地址
+
+    Integer m = 1;
+    Integer n = 1;
+    System.out.println(m == n); // T	底层代码 Integer.valueOf()
+
+    Integer x = 128;
+    Integer y = 128;
+    System.out.println(x == y); // F	底层代码 Integer.valueOf(128)
+}								//		如果超过-128~127, 则直接返回对象
+```
+
+- 如果对比中有基本数据类型, 那么直接比较值 `128 == new Integer(128);`True
+
+#### String 类
+
+- String对象用于保存字符串, 一组字符序列
+- 字符串常量用双引号括起来的字符序列: "name"
+- 使用Unicode字符编码, 中文英文都占两个字节
+- String有很多构造器
+- 实现了两个接口: *Serializable*(串行化: 可以在网络传输)和*Comparable*(比较大小)
+- Stirng是final类, 不能被继承
+- String有属性 private final char value[]; 用于存放字符串
+- value是一个final类型, 不可以修改(地址)
+  - 这里说的是被创建那个字符串的地址是不可以修改的, 但是String的指向是可以改变的
+
+##### String对象创建方式
+
+- String s = "name";
+- String s2 = new String("name");
+
+![String的JVM内存图](.\img\String_JVM_Show.jpg)
+
+#### StringBuffer
+
+1. 直接父类是AbstractStringBuilder
+2. 实现了Serialization
+3. 父类中char[] value不是final, 该value存放字符串内容, 存放在堆中 不是常量池
+4. final类, 不能被继承
+
+##### String vs StringBuffer
+
+- String保存的是字符串常量, 不能被修改 `private final char value[]`
+- StringBuffer保存的是字符串变量, 每次更新不用更新地址, 效率更高
+
+##### String转换StringBuffer
+
+```java
+String str = "string";
+StringBuffer stringBuffer = new StringBuffer(str);
+
+String s = stringBuffer.toString();
+```
+
+#### StringBuilder
+
+- 可变的字符序列
+- 兼容StringBuffer的API
+- 不保证同步
+- 被设计做为StringBuffer的一个简易替代, 用在字符串缓冲区被单个线程使用的时候
+
+1. 直接父类是AbstractStringBuilder
+2. 实现了Serialization
+3. 父类中char[] value不是final, 该value存放字符串内容, 存放在堆中 不是常量池
+4. final类, 不能被继承
+5. StringBuilder没有做互斥处理, 即没有synchronized关键字, 只有在单线程下使用StringBuilder
+
+##### StringBuilder vs StringBuffer vs String
+
+1. StringBuilder和StringBuffer非常类似, 均代表可变的字符序列, 方法也一样
+2. String: 不可变字符序列, 效率低, 但是复用性高
+3. StringBuffer: 可变字符序列, 效率较高, 线程安全
+4. StringBuilder: 可变字符序列, 效率最高, 线程不安全
+
+所以: 如果我们对String做大量修改, 不要使用String
+
+- 大量操作用StringBuffer或StringBuilder
+- 大量操作, 单线程, 用StringBuilder
+- 大量操作, 多线程, 用StringBuffer
+- 少量修改, 被多个对象引用, 用String
+
+#### Arrays
+
+Arrays里面包含了一系列静态方法, 用于管理或操作数组
+
+- toString 返回数组的字符串形式
+
+- sort排序(自然排序或定制排序)
+
+  - 通过传入一个比较器实现定制排序
+
+  ```java
+  Arrays.sort(arr, new Comparator<Integer>() {
+      @Override
+      public int compare(Integer o1, Integer o2) {
+          return o1 - o2;
+      }
+  });
+  ```
+
+- binarySearch 通过二分搜索进行查找, 要求必须排好序
+
+- copyOf 从arr中拷贝指定数量的元素
+
+- fill 用指定的数填充数组中所有元素
+
+- eqauls 检查连个数组是否完全一样
+
+- asList 把形参列表中的数转换成一个List集合
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
