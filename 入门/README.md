@@ -2343,6 +2343,10 @@ String s = stringBuffer.toString();
 - 大量操作, 多线程, 用StringBuffer
 - 少量修改, 被多个对象引用, 用String
 
+5. StringBuffer和StringBuilder底层默认构建长度为16的数组
+
+6. StringBuffer和StringBuilder当字符串长度大于底层存放字符的数组的长度时就会触发扩容机制(扩容为原来的2倍+2)
+
 #### Arrays
 
 Arrays里面包含了一系列静态方法, 用于管理或操作数组
@@ -2372,21 +2376,90 @@ Arrays里面包含了一系列静态方法, 用于管理或操作数组
 
 - asList 把形参列表中的数转换成一个List集合
 
+### 集合
 
+- 可以动态保存任意多个对象
+- 提供了一系列增删改查代码
+- 添加或删除元素变简洁了
 
+![Collection集合](.\img\Collection_Show.jpg)
 
+集合主要分两种：
 
+- 单列集合
+  - Collection接口有两个重要的子接口 List Set，他们的实现子类
+- 双列集合
+  - Map接口的实现子类
 
+#### Collection
 
+- 可以存放多个元素，每个元素可以是Object
+- 有些实现类可以存放重复元素，有些不可以
+- 有些实现类是有序的(List), 有些不是(Set)
+- Collection接口没有直接的实现子类, 都是通过子接口Set和List来实现
 
+##### 迭代器 Iterator
 
+- 用于遍历Collection集合中的元素
+- 实现了Collection接口的集合类都有iterator() 方法, 用以返回一个实现了迭代器接口的对象, 即可以返回一个迭代器
+- 迭代器的结构
+- 仅用于遍历集合, 迭代器本身并不存放对象
 
+```java
+// 遍历集合
+// 1. 先得到迭代器
+Iterator iterator = arrayList.iterator();
+// itit 快捷键
+// 2. 使用while循环遍历
+while (iterator.hasNext()) {
+    Object next = iterator.next();
+}
+// 3. 当退出while循环, iterator指向最后一个元素
+// 4. 如果希望再次遍历, 需要重置迭代器
+iterator = arrayList.iterator();
+```
 
+##### 增强for
 
+```java
+// 增强for底层依旧是迭代器
+for(Object book : arrayList){
+    System.out.println(book);
+}
+```
 
+#### List
 
+1. List集合类中元素有序(添加顺序和取出顺序一致)，且可以重复
+2. List和集中的每个元素都有对应的顺序索引
 
+##### ArrayList
 
+- 可以加入null
+- 由数组来实现数据储存
+- 基本等同于Vector, 除了ArrayList是线程不安全但效率高
+
+###### ArrayList底层操作机制
+
+1. ArrayList中维护了一个Object类型的数组
+   - `transient Object[] elementData` // transient关键字表示该属性不会被序列化
+2. 有无参构造器和有参构造器, 每次扩容都是当前容量的1.5倍, 无参构造器初始容量为0, 第一次添加后扩容10. 有参构造器初始容量为指定大小
+
+##### Vector
+
+- Vector底层也是一个对象数组, `protected Object[] elementData;`
+- 线程同步的, 线程安全, 类方法都带有synchronized
+
+|           | 底层结构 | 版本    | 线程安全       | 扩容倍数          |
+| --------- | -------- | ------- | -------------- | ----------------- |
+| ArrayList | 可变数组 | jdk 1.2 | 不安全, 效率高 | 1.5倍, 无参默认10 |
+| Vector    | 可变数组 | jdk 1.0 | 安全, 效率不高 | 2倍, 无参默认10   |
+
+##### LinkedList
+
+- 底层实现了双向列表和双端队列特点
+- 可以添加任意元素, 包括null
+- 线程不安全
 
 
 
