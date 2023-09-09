@@ -2433,7 +2433,7 @@ for(Object book : arrayList){
 1. List集合类中元素有序(添加顺序和取出顺序一致)，且可以重复
 2. List和集中的每个元素都有对应的顺序索引
 
-##### ArrayList
+##### ArrayList (可加null, 默认10, 1.5倍, 不安全, 效率高)
 
 - 可以加入null
 - 由数组来实现数据储存
@@ -2445,7 +2445,7 @@ for(Object book : arrayList){
    - `transient Object[] elementData` // transient关键字表示该属性不会被序列化
 2. 有无参构造器和有参构造器, 每次扩容都是当前容量的1.5倍, 无参构造器初始容量为0, 第一次添加后扩容10. 有参构造器初始容量为指定大小
 
-##### Vector
+##### Vector (可加null, 默认10, 2倍, 安全, 效率低)
 
 - Vector底层也是一个对象数组, `protected Object[] elementData;`
 - 线程同步的, 线程安全, 类方法都带有synchronized
@@ -2455,11 +2455,133 @@ for(Object book : arrayList){
 | ArrayList | 可变数组 | jdk 1.2 | 不安全, 效率高 | 1.5倍, 无参默认10 |
 | Vector    | 可变数组 | jdk 1.0 | 安全, 效率不高 | 2倍, 无参默认10   |
 
-##### LinkedList
+##### LinkedList (可加null, 不安全, 效率高)
 
 - 底层实现了双向列表和双端队列特点
 - 可以添加任意元素, 包括null
 - 线程不安全
+
+|            | 底层结构 | 增删效率           | 查找效率 |
+| ---------- | -------- | ------------------ | -------- |
+| ArrayList  | 可变数组 | 较低, 数组扩容     | 较高     |
+| LinkedList | 双向列表 | 较高, 通过链表追加 | 较低     |
+
+如何选择?
+
+1. 改查操作多 选ArrayList
+2. 增删操作多 选LinkedList
+3. 大部分情况选择ArrayList
+
+#### Set
+
+- 无序，没有索引
+- 不允许重复元素, 所以最多包含一个null
+- 可以使用迭代器和增强for
+
+##### HashSet (可加null, 默认16, 复杂, 不安全, 无序)
+
+- HashSet实现了Set接口
+- HashSet实际上是HashMap
+
+###### 底层逻辑
+
+1. 添加一个元素时, 先得到hash值 *--转成-->* 索引值
+2. 第一次添加时, table数组扩容到16, 临界值(threshold)是16*加载因子(0.75)
+3. 找到储存数据表table, 看这个索引位置是否有已经存放的元素
+4. 如果没有, 直接加入
+5. 如果有, 调用equals比较 (可以重写), 如果相同, 就放弃添加, 如果不同, 则添加到最后
+6. 如果table数组使用到了临界值, 就会扩容到16*2, 新临界值32\*0.75
+7. 如果一条链表的元素个数达到8, 并且table大小 >= 64, 就会进行树化 (红黑树)
+8. 如果一条链表的元素个数达到8, 并且table大小 < 64, 就会扩容
+
+##### LinkedHashSet (有序)
+
+- LinkedHashSet是HashSet的子类
+- 底层是一个LinkedHashMap, 底层维护了一个 数组+双向链表
+- LinkedHashSet根据元素的hashCode值来决定元素的储存位置, 同时使用链表维护元素的次序, 这使得元素看起来是以插入顺序保存的
+- LinkedHashSet不允许添加重复元素
+
+###### 底层逻辑
+
+1. LinkedHashSet底层维护了一个hash表和双向链表
+2. 有head和tail
+3. 每一个节点有pre和next属性
+4. 在添加一个元素时, 先求hash值, 再求索引, 确认该元素在hashtable的位置, 然后将添加的元素加入到双向链表
+5. 遍历LinkedHashSet也能确保插入顺序和遍历顺序一致
+
+##### TreeSet
+
+1. 底层就是TreeMap
+
+#### Map
+
+![Map](.\img\Map_Show.jpg)
+
+1. 保存具有映射关系的数据: key-value
+2. map中的key和value可以为任意引用类型数据
+3. key不可以重复
+4. value可以重复
+5. 当有相同的k, 就等价于替换
+6. 常用String类作为Map的key
+7. 一对k-v是放在一个HashMap$Node中的, 有 因为Node实现了 Entry接口
+
+##### HashMap (可加null, 默认16, 复杂, 不安全, 无序)
+
+- Map接口使用频率最高的实现类
+- 可以储存null
+- 和HashSet一样, 不保证映射顺序, 因为底层是hash表方式来储存
+- HashMap没有实现同步, 线程不安全
+
+###### 扩容机制
+
+和hashSet一样
+
+##### HashTable (不可加null, 默认11, 2倍+1, 安全, 无序)
+
+- 使用方法基本和HashMap一样
+- 线程安全
+- key和value**不能为null**, 会抛出错误
+
+###### 底层逻辑
+
+1. 底层有数组 Hashtable$Entry[], 初始化为11
+2. 临界值threshold 8 = 11*0.75
+3. 扩容: *2 +1
+
+|           | 版本 | 线程安全 | 效率 | 允许null键null值 |
+| --------- | ---- | -------- | ---- | ---------------- |
+| HashMap   | 1.2  | 不安全   | 高   | 可以             |
+| Hashtable | 1.0  | 安全     | 较低 | 不可以           |
+
+##### Properties
+
+- 和Hashtable类似
+- 可以从.properties文件中加载数据到Properties类对象, 并进行修改
+
+##### TreeMap
+
+通过在构造器中重写比较器进行排序. 如果比较器的结果为0, 就表明两个键的值相等, 所以不会替换键的值. 但是会替换值的值.
+
+#### 如何选择?
+
+1. 判断存储类型 (一组对象[单例]或一组键值对[双列])
+2. 一组对象:
+   - 允许重复: List
+     - 增删多: LinkedList [底层维护了一个双向列表]
+     - 改查多: ArrayList [底层维护了Object类型的可变数组]
+   - 不允许重复: Set
+     - 无序: HashSet [底层是HashMap, 维护了一个哈希表(即数组+链表+红黑树)]
+     - 排序: TreeSet
+     - 插入和取出顺序一致: LinkedHashSet, 维护数组+双向链表
+3. 一组键值对: Map
+   - 键无序: HashMap [底层是哈希表]
+   - 键排序: TreeMap
+   - 键插入和取出顺序一致: LinkedHashMap
+   - 读取文件: Properties
+
+#### Collections工具类
+
+
 
 
 
@@ -2501,4 +2623,11 @@ for(Object book : arrayList){
    - 不希望类的某个属性的值被修改, 用final修饰
    - 不希望某个局部变量被修改, 用final修饰
 5. 介绍 Java 的集合类
+   - List
+     - List集合类中元素有序(添加顺序和取出顺序一致)，且可以重复
+     - List和集中的每个元素都有对应的顺序索引
+   - Set
+     - 无序，没有索引
+     - 不允许重复元素, 所以最多包含一个null
+     - 可以使用迭代器和增强for
 6. ArrayList 和 LinkedList 的区别
