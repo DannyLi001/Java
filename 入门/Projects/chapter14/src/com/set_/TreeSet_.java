@@ -28,13 +28,28 @@ public class TreeSet_ {
         TreeMap treeMap = new TreeMap(new Comparator() {
             @Override
             public int compare(Object o1, Object o2) {
-                return ((String) o1).length() - ((String) o2).length();
+                return 0;
             }
         });
-        treeMap.put("123","asda");
-        treeMap.put("sd","wefa");
-        treeMap.put("fwe","ddfsa");
-        treeMap.put("fes","effa");
+        treeMap.put(new Person(1),"asda");
+        treeMap.put(new Person(5),"wefa");
+        treeMap.put(new Person(2),"ddfsa");
+        treeMap.put(new Person(3),"effa");
         System.out.println(treeMap);
+    }
+}
+class Person {
+    public int i;
+
+    public Person(int i) {
+        this.i = i;
+    }
+
+
+    @Override
+    public String toString() {
+        return "Person{" +
+                "i=" + i +
+                '}';
     }
 }

@@ -2387,7 +2387,7 @@ Arrays里面包含了一系列静态方法, 用于管理或操作数组
 集合主要分两种：
 
 - 单列集合
-  - Collection接口有两个重要的子接口 List Set，他们的实现子类
+  - Collection接口有两个重要的子接口 List 和 Set，他们的实现子类
 - 双列集合
   - Map接口的实现子类
 
@@ -2494,6 +2494,22 @@ for(Object book : arrayList){
 7. 如果一条链表的元素个数达到8, 并且table大小 >= 64, 就会进行树化 (红黑树)
 8. 如果一条链表的元素个数达到8, 并且table大小 < 64, 就会扩容
 
+```java
+HashSet hashSet = new HashSet();
+Person p1 = new Person(1001, "AA");
+Person p2 = new Person(1002, "BB");
+
+hashSet.add(p1);
+hashSet.add(p2);
+p1.setName("CC");
+System.out.println(hashSet.remove(p1));	// 删除p1 需要计算p1的新hash值, 和添加时的hash值不一样 所以删除失败
+System.out.println(hashSet);	// 两个
+hashSet.add(new Person(1001,"CC"));	// 与之前的无关, 添加成功
+System.out.println(hashSet);	// 三个
+hashSet.add(new Person(1001,"AA"));	// 添加的hash值和之前的一样, 但是现在value不一样 所以添加成功
+System.out.println(hashSet);	// 四个
+```
+
 ##### LinkedHashSet (有序)
 
 - LinkedHashSet是HashSet的子类
@@ -2558,9 +2574,25 @@ for(Object book : arrayList){
 - 和Hashtable类似
 - 可以从.properties文件中加载数据到Properties类对象, 并进行修改
 
-##### TreeMap
+##### TreeMap (不可加null, 不安全, 自定义)
 
-通过在构造器中重写比较器进行排序. 如果比较器的结果为0, 就表明两个键的值相等, 所以不会替换键的值. 但是会替换值的值.
+通过在构造器中重写比较器进行排序. 如果比较器的结果为0, 就表明两个键的值相等, 所以不会替换键的值. 但是会替换值的值. 如果不写匿名内部类且要加自定义类的话需要实现comparable接口的comparaTo方法.
+
+```java
+TreeMap treeMap = new TreeMap(new Comparator() {
+    @Override
+    public int compare(Object o1, Object o2) {
+        return ((String) o1).length() - ((String) o2).length();
+    }
+});
+// 二选一
+class Person implements Comparable{
+    @Override
+    public int compareTo(Object o) {
+        return 0;
+    }
+}
+```
 
 #### 如何选择?
 
@@ -2579,13 +2611,51 @@ for(Object book : arrayList){
    - 键插入和取出顺序一致: LinkedHashMap
    - 读取文件: Properties
 
-#### Collections工具类
+### 泛型
 
+- 编译时, 检查添加元素类型, 提高安全性
+- 减少了类型转换的操作, 提高效率
+- 不再提示编译警告
 
+1. 又称参数化类型,  解决数据类型的安全问题
+2. 在类声明或实例化时, 只要指定好需要的具体的类型即可
+3. 使用泛型可以保证如果程序在编译时没有发出警告, 运行时就不会产生ClassCastException异常, 同时代码更加简洁, 健壮
+4. 可以在类声明时通过一个标识表示类中某个属性的类型, 或者是某个方法的返回值的类型, 或者是参数类型
 
+```java
+class Person<E> {	// 自定义泛型类
+	E s;	// E 表示s的数据类型, 该数据类型在定义Person对象的时候指定, 即在编译期间, 就确定E是什么类型
+	public Person(E s){
+		this.s = s;
+	}
+	
+	public E f(){
+		return s;	
+	}
+}
+```
 
+#### 注意
 
+1. 泛型指向的类型不能是基础类型, 必须是引用类型
+2. 指定泛型具体类型后, 可以传入该类型或者该类型的子类型
+3. 泛型使用形式
 
+```java
+ArrayList<Integer> arrayList = new ArrayList<Integer>();    // 类
+List<Integer> list = new ArrayList<Integer>();      // 接口
+
+ArrayList<Integer> arrayList1 = new ArrayList</*省略且推荐*/>();
+List<Integer> list1 = new ArrayList<>();
+// 如果没有<> 那么默认为Object类
+```
+
+4. 普通成员可以使用泛型 (属性, 方法)
+5. 使用泛型的数组不能被初始化 // 不能确定开辟的空间大小
+6. 静态方法中不能使用类的泛型 // 静态是和类相关的, 在类加载时, 对象还没创建
+7. 泛型接口的类型, 在继承接口或实现接口时确定
+8. 泛型方法可以定义在普通类中, 也可以在泛型类中.
+9. 泛型不具有继承性 `List <Object> list = new ArrayList<String> (); //错误`
 
 
 
@@ -2631,3 +2701,9 @@ for(Object book : arrayList){
      - 不允许重复元素, 所以最多包含一个null
      - 可以使用迭代器和增强for
 6. ArrayList 和 LinkedList 的区别
+
+|            | 底层结构 | 增删效率           | 查找效率 |
+| ---------- | -------- | ------------------ | -------- |
+| ArrayList  | 可变数组 | 较低, 数组扩容     | 较高     |
+| LinkedList | 双向列表 | 较高, 通过链表追加 | 较低     |
+
