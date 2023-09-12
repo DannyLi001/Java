@@ -2629,9 +2629,13 @@ class Person<E> {	// 自定义泛型类
 		this.s = s;
 	}
 	
-	public E f(){
+	public <T> f(T t){	// 自定义泛型方法
 		return s;	
 	}
+}
+
+interface InterfaceA<E> {	// 自定义泛型接口
+    
 }
 ```
 
@@ -2656,6 +2660,305 @@ List<Integer> list1 = new ArrayList<>();
 7. 泛型接口的类型, 在继承接口或实现接口时确定
 8. 泛型方法可以定义在普通类中, 也可以在泛型类中.
 9. 泛型不具有继承性 `List <Object> list = new ArrayList<String> (); //错误`
+10. <?> 表示任意的泛型类型都可以接受
+11. <? extends AA> 表示上限, 可以接受AA或者AA子类
+12. <? super AA> 表示下限, 可以接受AA或者AA父类
+
+### JUnit
+
+```java
+@Test	// 需要安装
+public void m1(){
+    System.out.println("m1");
+}
+```
+
+### Java绘图
+
+- 坐标原点位于左上角, 以像素为单位. 第一个是x坐标, 表示当前位置为水平方向, 距离坐标原点x个像素. y轴同理
+- Component类提供了两个和绘图相关的重要方法:
+  - paint(Graphics g) 绘制组件的外观
+  - repaint()刷新组件外观
+- 当组件第一次在屏幕显示的时候, 程序会自动调用paint()方法来绘制组件
+  - 窗口最简化, 再最大化
+  - 窗口大小发生变化
+  - repaint方法被调用
+
+### 事件处理机制
+
+- java事件处理是采取"委派事件模型". 当事件发生时, 产生时间的对象, 会把"信息"传递给"事件的监听者"处理. 这里所说的"信息"实际上就是java.awt.event事件类库里的某个类所创建的对象, 把它称为"事件的对象"
+
+1. 事件源: 产生事件的对象, 比如按钮
+2. 事件: 事件就是承载事件源状态改变时的对象, 比如当键盘事件, 会产生一个事件对象, 该对象保存着当前时间很多信息, 比如KeyEvent对象有含有按下键的Code值. java.awt.event包和java.swing.event包中定义了各种事件类型
+3. 事件监听接口:
+   1. 当事件源产生一个事件, 可以传送给监听者处理
+   2. 事件监听者实际上是一个类, 该类实现了某个事件监听接口
+   3. 事件监听接口有多种, 不同的事件监听接口可以监听不同的事件, 一个类可以实现多个监听接口
+
+### 线程
+
+- 线程由进程创建, 是进程的一个实体
+- 一个进程可以有多个线程
+
+- **进程**
+
+  - 进程指的是运行中的程序, 操作系统自动为其分配内存空间
+
+  - 进程是程序的一次执行过程, 或者是正在运行的一个程序. 是动态过程: 它有自己的生产, 存在和消亡的过程
+
+1. 单线程
+   - 同一个时刻, 只允许一个线程
+
+2. 多线程
+   - 同一时刻, 可执行多个线程, 比如: 一个qq进程, 可以同时打开多个聊天窗口
+
+3. 并发
+   - 同一时刻, 多个任务交替执行, 造成一种"貌似同时"的错觉
+     - 单核cpu实现的多任务
+4. 并行
+   - 同一时刻, 多个任务同时执行
+     - 多核cpu可以实现并行
+
+#### 创建线程的两种方式
+
+1. 继承Thread类, 重写run方法
+2. 实现Runnable接口, 重写run方式
+
+```java
+// 继承Thread类, 重写run方法
+public class Thread01 {
+    public static void main(String[] args) {
+        Cat cat = new Cat();
+        cat.start();	// 使用start启动线程
+        // cat.run(); 这样运行会是在同一个线程, 不会开启新线程
+    }
+}
+// 当一个类继承了Thread类, 该类就可以当作线程使用
+// Thread类实现了Runnable接口的run方法
+class Cat extends Thread{
+    int count;
+    @Override
+    public void run() { // 重写run方法, 写上自己的业务逻辑
+        while (true) {
+            System.out.println("sth");
+            count ++;
+            try {
+                Thread.sleep(1000);	// 睡眠1s
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            if(count == 8){
+                break;
+            }
+        }
+    }
+}
+```
+
+在运行过程中, 可以通过在终端输入jconsole来查看线程
+
+- start()调用的是底层的start0()本地方法, 是JVM调用, 底层用C/C++实现
+
+```java
+// 继承Runnable, 重写run方法
+public class Thread02 {
+    public static void main(String[] args) {
+        Dog dog = new Dog();
+        // dog 不能直接调用run
+        // 代理模式
+        // 创建了Thread对象, 把dog对象(实现Runnable), 放入Thread
+        Thread thread = new Thread(dog);
+        thread.start();
+    }
+}
+
+class Dog implements Runnable{
+    int count = 0;
+    @Override
+    public void run() {
+        while(true){
+            count++;
+            System.out.println("Dog" + Thread.currentThread().getName());
+            if(count == 10){
+                break;
+            }
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+}
+```
+
+可以出现main线程结束, 但是其他线程依然存在的情况
+
+#### 继承Thread vs 实现Runnable接口的区别
+
+- 从设计来看, 没有区别. 底层都是调用start()方法
+- 实现Runnable接口方式更适合多个线程共享一个资源的情况, 并且避免了单继承的限制
+
+#### 线程终止
+
+- 当线程完成任务后, 会自动退出
+- 还可以通过使用变量来控制run方法退出的方式停止线程, 即通知方式
+
+```java
+// main
+T t = new T();
+t.start();
+// main线程控制t线程
+// 修改loop, 让t退出run方法 -> 通知方式
+Thread.sleep(1000 * 10);
+t.setLoop(false);
+
+class T extends Thread {
+    private int count;
+    private boolean loop = true;
+
+    public void setLoop(boolean loop) {
+        this.loop = loop;
+    }
+    @Override
+    public void run() {
+        while (loop) {...}
+    }
+}
+```
+
+#### 注意
+
+1. start底层会创建新的线程, 调用run, run就是一个简单的方法调用, 不会启动新线程
+2. 线程优先级的范围
+3. interrupt, 中断线程, 但并没有真正的结束线程, 所以一般用于中断正在休眠线程
+4. sleep: 线程的静态方法, 使当前线程休眠
+5. yield: 线程的礼让, 让出cpu, 让其他线程执行, 但礼让的时间不确定, 所以比一定礼让成功
+6. join: 线程的插队, 插队的现场一旦插队成功, 则肯定先执行完插入的线程所有的任务
+
+#### 用户现场和守护线程 
+
+`thread.setDaemon(true);`
+
+1. 用户线程
+   - 也叫工作线程, 当线程的任务执行完或通知方式结束
+2. 守护线程
+   - 一般是为工作线程服务的, 当所有的用户线程结束, 守护线程自动结束
+3. 常见的守护线程: 垃圾回收机制
+
+#### 线程7大状态
+
+![7大线程状态](.\img\Thread_Type.jpg)
+
+#### 线程同步机制 Synchronized
+
+- 保证数据在任何一时刻, 最多有一个线程访问, 以保证数据的完整性
+
+`public synchronized void sell()`
+
+#### 互斥锁
+
+- 每个对象都对应一个可称为"互斥锁"的标记, 这个标记用来保证在任一时刻, 只能有一个线程访问该对象
+- 关键字synchronized来与对象的互斥锁联系, 当某个对象用synchronized修饰时, 表明该对象在任一时刻只能由一个线程访问
+- 同步的局限性: 导致程序的执行效率降低
+- 同步方法(非静态的)的锁可以是this, 也可以是其他对象(要求是同一个对象)
+- 同步方法(静态的)的锁为当前类本身
+
+```java
+public /*synchronized*/ void sell() {
+    synchronized (this) {
+        if (ticketNum <= 0) {
+            System.out.println("finish");
+            loop = false;
+            return;
+        }
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        System.out.println(Thread.currentThread().getName() + " " + ticketNum--);
+    }
+}
+```
+
+##### 注意
+
+1. 同步方法如果没有static修饰: 默认锁对象为this
+2. 如果方法使用static修饰, 默认锁对象时当前类.class
+3. 实现步骤:
+   1. 需要先分析上锁的代码
+   2. 选择同步代码块或同步方法
+   3. 要求多个线程的锁对象为同一个
+
+#### 线程的死锁
+
+多个线程都占用了对方的资源锁, 但不肯相让, 导致了死锁
+
+```java
+public class DeadLock {
+    public static void main(String[] args) {
+        DeadLockDemo deadLockDemo1 = new DeadLockDemo(true);
+        DeadLockDemo deadLockDemo2 = new DeadLockDemo(false);
+        deadLockDemo1.start();
+        deadLockDemo2.start();
+    }
+}
+class DeadLockDemo extends Thread{
+    static Object o1 = new Object();
+    static Object o2 = new Object();
+    boolean flag;
+
+    public DeadLockDemo(boolean flag) {
+        this.flag = flag;
+    }
+
+    @Override
+    public void run() {
+        if (flag) {
+            synchronized (o1){
+                System.out.println(Thread.currentThread().getName());
+                synchronized (o2){
+                    System.out.println(Thread.currentThread().getName());
+                }
+            }
+        }else{
+            synchronized (o2){
+                System.out.println(Thread.currentThread().getName());
+                synchronized (o1){
+                    System.out.println(Thread.currentThread().getName());
+                }
+            }
+        }
+    }
+}
+```
+
+#### 释放锁
+
+下面操作会释放锁
+
+1. 当前线程的同步方法, 同步代码块执行结束
+2. 当前线程的同步方法, 同步代码块执行中遇到break, return
+3. 当前线程的同步方法, 同步代码块中出现了未处理的Error或Exception, 导致异常结束
+4. 当前线程的同步方法, 同步代码块中执行了线程对象的wait()方法, 当前线程暂停, 并释放锁
+
+下面操作不会释放锁
+
+1. 线程执行同步代码块或同步方法时, 程序员调用Thread.sleep(), Thread.yield()方法暂停当前线程的执行, 不会释放锁
+2. 线程执行同步代码块或同步方法时,其他线程调用了该线程的suspend()方法将该线程挂起, 该线程不会释放锁
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
