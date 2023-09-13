@@ -2980,6 +2980,20 @@ class DeadLockDemo extends Thread{
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ### 经典面试题
 
 1. 为什么重写 equals 还要重写 hashcode？
