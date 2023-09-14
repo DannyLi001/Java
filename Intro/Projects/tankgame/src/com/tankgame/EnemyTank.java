@@ -1,4 +1,4 @@
-package com.draw.tankgame;
+package com.tankgame;
 
 import java.util.Vector;
 
@@ -7,7 +7,6 @@ import java.util.Vector;
  */
 public class EnemyTank extends Tank implements Runnable {
     private Vector<Bullet> bullets = new Vector<>();
-    private boolean isAlive = true;
     private int step = 30;
     private int moveSleepT = 30;
     private int bulletAllow = 3;
@@ -21,7 +20,7 @@ public class EnemyTank extends Tank implements Runnable {
     public void run() {
         while (true) {
             // shooting bullets
-            if (isAlive && bullets.size() < bulletAllow) {
+            if (super.isAlive() && bullets.size() < bulletAllow) {
                 Bullet bullet = null;
                 switch (getDir()) {
                     case 0:
@@ -93,13 +92,7 @@ public class EnemyTank extends Tank implements Runnable {
         }
     }
 
-    public boolean isAlive() {
-        return isAlive;
-    }
 
-    public void setAlive(boolean alive) {
-        isAlive = alive;
-    }
 
     public Vector<Bullet> getBullets() {
         return bullets;

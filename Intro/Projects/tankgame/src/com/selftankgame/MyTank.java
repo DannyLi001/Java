@@ -1,15 +1,13 @@
-package com.draw.tankgame;
+package com.selftankgame;
 
-import java.util.Vector;
+
 
 /**
- * @author
+ * @author Danny
  */
-public class MyTank extends Tank {
-    Vector<Bullet> bullets = new Vector<>();
-    Bullet bullet = null;
-    private boolean isAlive = true;
+public class MyTank extends Tank{
     private int bulletAllow = 5;
+    private Bullet bullet;
 
     public MyTank(int x, int y) {
         super(x, y);
@@ -17,7 +15,7 @@ public class MyTank extends Tank {
 
     // Shooting bullet
     public void shoot() {
-        if (bullets.size() > bulletAllow - 1) {
+        if (getBullets().size() > bulletAllow - 1) {
             return;
         }
         // set bullet position
@@ -36,33 +34,17 @@ public class MyTank extends Tank {
                 break;
         }
 
-        bullets.add(bullet);
+        getBullets().add(bullet);
         new Thread(bullet).start();
 
         // new thread to track bullet
     }
 
-    public Vector<Bullet> getBullets() {
-        return bullets;
+    public int getBulletAllow() {
+        return bulletAllow;
     }
 
-    public void setBullets(Vector<Bullet> bullets) {
-        this.bullets = bullets;
-    }
-
-    public Bullet getBullet() {
-        return bullet;
-    }
-
-    public void setBullet(Bullet bullet) {
-        this.bullet = bullet;
-    }
-
-    public boolean isAlive() {
-        return isAlive;
-    }
-
-    public void setAlive(boolean alive) {
-        isAlive = alive;
+    public void setBulletAllow(int bulletAllow) {
+        this.bulletAllow = bulletAllow;
     }
 }

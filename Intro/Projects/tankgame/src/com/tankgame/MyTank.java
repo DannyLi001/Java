@@ -1,4 +1,4 @@
-package com.draw.tankgame;
+package com.tankgame;
 
 import java.util.Vector;
 

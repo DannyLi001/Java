@@ -1,13 +1,10 @@
-package com.draw.tankgame;
+package com.selftankgame;
 
-import java.util.Vector;
 
 /**
- * @author
+ * @author Danny
  */
-public class EnemyTank extends Tank implements Runnable {
-    private Vector<Bullet> bullets = new Vector<>();
-    private boolean isAlive = true;
+public class EnemyTank extends Tank implements Runnable{
     private int step = 30;
     private int moveSleepT = 30;
     private int bulletAllow = 3;
@@ -21,7 +18,7 @@ public class EnemyTank extends Tank implements Runnable {
     public void run() {
         while (true) {
             // shooting bullets
-            if (isAlive && bullets.size() < bulletAllow) {
+            if (isAlive() && getBullets().size() < bulletAllow) {
                 Bullet bullet = null;
                 switch (getDir()) {
                     case 0:
@@ -38,7 +35,7 @@ public class EnemyTank extends Tank implements Runnable {
                         break;
 
                 }
-                bullets.add(bullet);
+                getBullets().add(bullet);
                 Thread thread = new Thread(bullet);
                 thread.start();
             }
@@ -93,19 +90,27 @@ public class EnemyTank extends Tank implements Runnable {
         }
     }
 
-    public boolean isAlive() {
-        return isAlive;
+    public int getStep() {
+        return step;
     }
 
-    public void setAlive(boolean alive) {
-        isAlive = alive;
+    public void setStep(int step) {
+        this.step = step;
     }
 
-    public Vector<Bullet> getBullets() {
-        return bullets;
+    public int getMoveSleepT() {
+        return moveSleepT;
     }
 
-    public void setBullets(Vector<Bullet> bullets) {
-        this.bullets = bullets;
+    public void setMoveSleepT(int moveSleepT) {
+        this.moveSleepT = moveSleepT;
+    }
+
+    public int getBulletAllow() {
+        return bulletAllow;
+    }
+
+    public void setBulletAllow(int bulletAllow) {
+        this.bulletAllow = bulletAllow;
     }
 }

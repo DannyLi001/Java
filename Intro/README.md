@@ -2772,7 +2772,7 @@ public class Thread02 {
     }
 }
 
-class Dog implements Runnable{
+class Dog implements Runnable{	// 推荐
     int count = 0;
     @Override
     public void run() {
@@ -2948,27 +2948,271 @@ class DeadLockDemo extends Thread{
 1. 线程执行同步代码块或同步方法时, 程序员调用Thread.sleep(), Thread.yield()方法暂停当前线程的执行, 不会释放锁
 2. 线程执行同步代码块或同步方法时,其他线程调用了该线程的suspend()方法将该线程挂起, 该线程不会释放锁
 
+### IO流
 
+#### 文件流
 
+- 流：数据在数据源文件和程序文件之间经历的路径
+- 输出流: 从数据源到程序的路径
+- 输入流: 从程序到数据源的路径
 
+```java
+File file = new File("d:\\text.txt");
+try {
+    file.createNewFile();
+    System.out.println("success");
+} catch (IOException e) {
+    e.printStackTrace();
+}
+System.out.println(file.getAbsolutePath());
+System.out.println(file.exists());
+System.out.println(file.isDirectory());
+file.delete();
+file.list();
+```
 
+#### IO流原理
 
+- 处理数据传输. 如读写文件, 网络通讯
+- 对于数据的输入/输出操作以"流strem" 的方式进行
+- io包下提供了各种"流"类和接口.
 
+#### 流的分类
 
+- 按操作数据单位不同分为: 字节流(8 bit) 二进制文件(图片,录音), 字符流(按字符)文本文件
+- 按流向不同: 输入流, 输出流
+- 按流的角色不同分为: 节点流, 处理流/包装流
 
+| 抽象基类 | 字节流       | 字符流 |
+| -------- | ------------ | ------ |
+| 输入流   | InputStream  | Reader |
+| 输出流   | OutputStream | Writer |
 
+1. io流共涉及40多个类, 实际上非常规则, 都是从如上4个抽象类派生的
+2. 由这四个类派生出来的子类名称都是以其父类名作为子类后缀
 
+```java
+// 节点流
+public void readFile02(){
+    String filePath = "d:\\text.txt";
+    FileInputStream fileInputstream = null;
+    int read = 0;
+    int readLen = 0;
+    byte[]  buf = new byte[8];	// 使用缓冲
+    try {
+        fileInputstream = new FileInputStream(filePath);
+        while((readLen = fileInputstream.read(buf)) != -1){
+            System.out.print(new String(buf, 0, readLen));
+        }
+    } catch (Exception e) {
+        e.printStackTrace();
+    }finally {
+        try {
+            fileInputstream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+```
 
+- 节点流可以从一个特定的数据源读取数据, 如filereader, filerwriter
 
+- 处理流(包装流)是"连接"在已存在的流之上, 为程序提供更为强大的读写功能, 如bufferedreader, bufferedwriter
 
+处理流和节点流的区别和联系
 
+1. 节点流是底层流, 直接跟数据源相连
+2. 处理流包装节点流, 既可以消除不同节点流的现实差异, 也可以提供更方便的方法来完成输入输出
+3. 处理流对节点流进行包装, 使用了修饰器设计模式, 不会直接与数据源相连
 
+处理流的功能主要体现在以下两方面:
 
+1. 性能的提高: 主要以增加缓冲的方式来提高输入输出的效率
+2. 操作的便捷: 处理流可以提供一系列便捷的方法来依次输入输出大批量数据
 
+- 关闭处理流, 只需要关闭外层流即可
 
+##### 处理流-BufferedInputStream和BufferedOutputStream
 
+```java
+// 使用bufferedinputstream和bufferedoutputstream
+// 比使用指定inputstream有更多功能
+String inputPath = "d:\\";
+String outputPath = "d:\\";
+BufferedInputStream bufferedInputStream = null;
+BufferedOutputStream bufferedOutputStream = null;
 
+try {
+    bufferedInputStream = new BufferedInputStream(new FileInputStream(inputPath));	
+    // 传入任意实现Inputstream抽象类的类
+    bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(outputPath));
 
+    byte[] buf = new byte[1024];
+    int readLen = 0;
+    while ((readLen = bufferedInputStream.read(buf)) != -1){
+        bufferedOutputStream.write(buf,0,readLen);
+    }
+
+} catch (IOException e) {
+    e.printStackTrace();
+} finally {
+    try {
+        bufferedInputStream.close();
+        bufferedOutputStream.close();
+    } catch (IOException e) {
+        e.printStackTrace();
+    }
+}
+```
+
+#### 序列化和反序列化
+
+- 序列化就是在保存数据时, 保存数据的值和数据类型
+- 反序列化就是在恢复数据时, 恢复数据的值和数据的类型
+- 需要让某个对象支持序列化机制, 则必须让其类时可序列化的, 该类必须实现如下两个接口之一
+  - Serializable		// 推荐, 没有方法, 是个标记接口
+  - Externalizable
+
+##### ObjectInputStream 反序列化 / ObjectOutputStream 序列化
+
+```java
+public class ObjectStream_ {
+    public static void main(String[] args) {
+        // 序列化后，保存的文件格式dat
+        String filePath = "d:\\...dat";
+
+        try {
+            ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(filePath));
+            oos.writeInt(100);
+            oos.writeBoolean(true);
+            oos.writeChar('a');
+            oos.writeDouble(123.23);
+            oos.writeUTF("ajsdfo");
+            oos.writeObject(new Dog("dog1", 12));
+            oos.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test	// 反序列化
+    public void ObjInputStream_() throws IOException,ClassNotFoundException{
+        String filePath = "d:\\...dat";
+
+        // 顺序必须保持一致
+        ObjectInputStream ois = new ObjectInputStream(new FileInputStream(filePath));
+        System.out.println(ois.readInt());
+        System.out.println(ois.readBoolean());
+        System.out.println(ois.readChar());
+        System.out.println(ois.readDouble());
+        System.out.println(ois.readUTF());
+        Object o = ois.readObject();
+        // 如果想要调用反序列化来的类型的方法，需要重新import这个类
+        // Dog dog = (Dog) o;   错误
+        ois.close();
+    }
+}
+
+// 如果需要实现序列化，需要实现Serializable接口
+class Dog implements Serializable {
+    private String name;
+    private int age;
+    private static String nation = "123";	//不会被序列化
+    private transient String color = "432";	//不会被序列化
+    private Master master = new Master();	//如果该类没有实现可序列化接口,则报错
+    // 序列化的版本号, 可以提高兼容性
+    private static final long serialVersionUID = 1L;
+
+    public Dog(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    @Override
+    public String toString() {
+        return "Dog{" +
+                "name='" + name + '\'' +
+                ", age=" + age +
+                '}' + 
+            	nation + ' ' + color;	// 打印null
+    }
+}
+```
+
+###### 注意
+
+- 序列化读写顺序要一致
+- 要求序列化和反序列化对象需要实现Serializable接口
+- 序列化的类中建议添加SerialVersionUID, 提高版本兼容性
+- 序列化对象时, 除了static transient修饰的成员, 将其他所有属性都进行序列化
+- 序列化对象时, 要求里面的属性的类型也需要实现序列化接口
+
+#### 转换流
+
+- InputStreamReader -> 字节流转字符流
+
+- OutputStreamWriter -> 字节流转字符流
+
+- 当处理纯文本数据时, 字符流效率更高, 而且有效解决中文问题
+- 可以指定编码格式
+
+```java
+public class StreamConvert {
+    public static void main(String[] args) throws IOException {
+        String filePath = "d:\\";
+        OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(filePath), "utf8");
+        osw.write("jasdofi");
+        osw.close();
+    }
+
+    @Test
+    public void InputStreamToReader() throws IOException{
+        // 读取gbk编码格式文件
+        String filePath = "d:\\";
+        // 先读取字节流, 再用InputStreamReader把字节改成字符, 然后再用缓冲流去编辑
+        InputStreamReader isr = new InputStreamReader(new FileInputStream(filePath), "gbk");
+        BufferedReader br = new BufferedReader(isr);
+        
+        String str = br.readLine();
+        System.out.println(str);
+        br.close();
+        
+    }
+}
+```
+
+#### 打印流
+
+```java
+PrintStream ps = System.out;
+// 修改打印流输出位置
+System.setOut(new PrintStream("d:\\text.txt"));
+ps.write("oijoasf".getBytes());
+ps.close();
+```
+
+#### Properties 类
+
+- 专门用于读取配置文件的集合类
+  - 键=值
+- 键值对不需要空格, 值不需要引号. 默认类型是String
+- 常见方法
+  - load: 加载文件到Properties类
+  - list: 显示数据
+  - getProperty(key):根据键获取值
+  - setProperty(key,value): 更新或创建
+  - store: 储存到配置文件, 如果是中文用unicode编码
+
+```java
+public static void main(String[] args) throws IOException {
+    Properties properties = new Properties();
+    properties.load(new FileReader("...properties"));
+    properties.list(System.out);
+    properties.getProperty("123");
+    properties.setProperty("123","321");
+}
+```
 
 
 

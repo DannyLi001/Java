@@ -1,7 +1,9 @@
-package com.draw.tankgame;
+package com.selftankgame;
+
+import java.util.Vector;
 
 /**
- * @author
+ * @author Danny
  */
 public class Tank {
     private int x;
@@ -10,11 +12,12 @@ public class Tank {
     private int speed = 1;
     private boolean isAlive = true;
 
+    private Vector<Bullet> bullets = new Vector<>();
+
     public Tank(int x, int y) {
         this.x = x;
         this.y = y;
     }
-
 
 
     public void moveUp(){
@@ -79,5 +82,13 @@ public class Tank {
 
     public void setAlive(boolean alive) {
         isAlive = alive;
+    }
+
+    public Vector<Bullet> getBullets() {
+        return bullets;
+    }
+
+    public void setBullets(Vector<Bullet> bullets) {
+        this.bullets = bullets;
     }
 }
