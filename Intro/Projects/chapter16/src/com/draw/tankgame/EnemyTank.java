@@ -7,6 +7,8 @@ import java.util.Vector;
  */
 public class EnemyTank extends Tank implements Runnable {
     private Vector<Bullet> bullets = new Vector<>();
+
+    private static Vector<EnemyTank> enemyTanks = new Vector<>();
     private boolean isAlive = true;
     private int step = 30;
     private int moveSleepT = 30;
@@ -14,6 +16,138 @@ public class EnemyTank extends Tank implements Runnable {
 
     public EnemyTank(int x, int y) {
         super(x, y);
+    }
+
+
+    public boolean isTouching() {
+        switch (this.getDir()) {
+            case 0:
+                for (EnemyTank enemyTank : enemyTanks) {
+                    if (enemyTank != this) {
+                        if (enemyTank.getDir() == 0 || enemyTank.getDir() == 2) {
+                            if (getX() >= enemyTank.getX() &&
+                                    getX() <= enemyTank.getX() + 40 &&
+                                    getY() >= enemyTank.getY() &&
+                                    getY() <= enemyTank.getY() + 60)
+                                return true;
+                            if (getX() + 40 >= enemyTank.getX() &&
+                                    getX() + 40 <= enemyTank.getX() + 40 &&
+                                    getY() >= enemyTank.getY() &&
+                                    getY() <= enemyTank.getY() + 60)
+                                return true;
+                        }
+                        if (enemyTank.getDir() == 1 || enemyTank.getDir() == 3) {
+                            if (getX() >= enemyTank.getX() &&
+                                    getX() <= enemyTank.getX() + 60 &&
+                                    getY() >= enemyTank.getY() &&
+                                    getY() <= enemyTank.getY() + 40)
+                                return true;
+                            if (getX() + 40 >= enemyTank.getX() &&
+                                    getX() + 40 <= enemyTank.getX() + 60 &&
+                                    getY() >= enemyTank.getY() &&
+                                    getY() <= enemyTank.getY() + 40)
+                                return true;
+
+                        }
+                    }
+                }
+                break;
+            case 1:
+                for (EnemyTank enemyTank : enemyTanks) {
+                    if (enemyTank != this) {
+                        if (enemyTank.getDir() == 0 || enemyTank.getDir() == 2) {
+                            if (getX() + 60 >= enemyTank.getX() &&
+                                    getX() + 60 <= enemyTank.getX() + 40 &&
+                                    getY() >= enemyTank.getY() &&
+                                    getY() <= enemyTank.getY() + 60)
+                                return true;
+                            if (getX() + 60 >= enemyTank.getX() &&
+                                    getX() + 60 <= enemyTank.getX() + 40 &&
+                                    getY() + 40 >= enemyTank.getY() &&
+                                    getY() + 40 <= enemyTank.getY() + 60)
+                                return true;
+                        }
+                        if (enemyTank.getDir() == 1 || enemyTank.getDir() == 3) {
+                            if (getX() + 60 >= enemyTank.getX() &&
+                                    getX() + 60 <= enemyTank.getX() + 60 &&
+                                    getY() >= enemyTank.getY() &&
+                                    getY() <= enemyTank.getY() + 40)
+                                return true;
+                            if (getX() + 60 >= enemyTank.getX() &&
+                                    getX() + 60 <= enemyTank.getX() + 60 &&
+                                    getY() + 40 >= enemyTank.getY() &&
+                                    getY() + 40 <= enemyTank.getY() + 40)
+                                return true;
+
+                        }
+                    }
+                }
+                break;
+            case 2:
+                for (EnemyTank enemyTank : enemyTanks) {
+                    if (enemyTank != this) {
+                        if (enemyTank.getDir() == 0 || enemyTank.getDir() == 2) {
+                            if (getX() >= enemyTank.getX() &&
+                                    getX() <= enemyTank.getX() + 40 &&
+                                    getY() + 60 >= enemyTank.getY() &&
+                                    getY() + 60 <= enemyTank.getY() + 60)
+                                return true;
+                            if (getX() + 40 >= enemyTank.getX() &&
+                                    getX() + 40 <= enemyTank.getX() + 40 &&
+                                    getY() + 60 >= enemyTank.getY() &&
+                                    getY() + 60 <= enemyTank.getY() + 60)
+                                return true;
+                        }
+                        if (enemyTank.getDir() == 1 || enemyTank.getDir() == 3) {
+                            if (getX() >= enemyTank.getX() &&
+                                    getX() <= enemyTank.getX() + 60 &&
+                                    getY() + 60 >= enemyTank.getY() &&
+                                    getY() + 60 <= enemyTank.getY() + 40)
+                                return true;
+                            if (getX() + 40 >= enemyTank.getX() &&
+                                    getX() + 40 <= enemyTank.getX() + 60 &&
+                                    getY() + 60 >= enemyTank.getY() &&
+                                    getY() + 60 <= enemyTank.getY() + 40)
+                                return true;
+
+                        }
+                    }
+                }
+                break;
+            case 3:
+                for (int i = 0; i < enemyTanks.size(); i++) {
+                    EnemyTank enemyTank = enemyTanks.get(i);
+                    if (enemyTank != this) {
+                        if (enemyTank.getDir() == 0 || enemyTank.getDir() == 2) {
+                            if (getX()  >= enemyTank.getX() &&
+                                    getX()  <= enemyTank.getX() + 40 &&
+                                    getY() >= enemyTank.getY() &&
+                                    getY() <= enemyTank.getY() + 60)
+                                return true;
+                            if (getX()  >= enemyTank.getX() &&
+                                    getX()  <= enemyTank.getX() + 40 &&
+                                    getY() + 40 >= enemyTank.getY() &&
+                                    getY() + 40 <= enemyTank.getY() + 60)
+                                return true;
+                        }
+                        if (enemyTank.getDir() == 1 || enemyTank.getDir() == 3) {
+                            if (getX()  >= enemyTank.getX() &&
+                                    getX()  <= enemyTank.getX() + 60 &&
+                                    getY() >= enemyTank.getY() &&
+                                    getY() <= enemyTank.getY() + 40)
+                                return true;
+                            if (getX()  >= enemyTank.getX() &&
+                                    getX()  <= enemyTank.getX() + 60 &&
+                                    getY() + 40 >= enemyTank.getY() &&
+                                    getY() + 40 <= enemyTank.getY() + 40)
+                                return true;
+
+                        }
+                    }
+                }
+                break;
+        }
+        return false;
     }
 
 
@@ -46,7 +180,8 @@ public class EnemyTank extends Tank implements Runnable {
             switch (getDir()) {
                 case 0:
                     for (int i = 0; i < step; i++) {
-                        moveUp();
+                        if (!isTouching())
+                            moveUp();
                         try {
                             Thread.sleep(moveSleepT);
                         } catch (InterruptedException e) {
@@ -57,7 +192,8 @@ public class EnemyTank extends Tank implements Runnable {
                     break;
                 case 1:
                     for (int i = 0; i < step; i++) {
-                        moveRight();
+                        if (!isTouching())
+                            moveRight();
                         try {
                             Thread.sleep(moveSleepT);
                         } catch (InterruptedException e) {
@@ -67,7 +203,8 @@ public class EnemyTank extends Tank implements Runnable {
                     break;
                 case 2:
                     for (int i = 0; i < step; i++) {
-                        moveDown();
+                        if (!isTouching())
+                            moveDown();
                         try {
                             Thread.sleep(moveSleepT);
                         } catch (InterruptedException e) {
@@ -77,7 +214,8 @@ public class EnemyTank extends Tank implements Runnable {
                     break;
                 case 3:
                     for (int i = 0; i < step; i++) {
-                        moveLeft();
+                        if (!isTouching())
+                            moveLeft();
                         try {
                             Thread.sleep(moveSleepT);
                         } catch (InterruptedException e) {
@@ -107,5 +245,13 @@ public class EnemyTank extends Tank implements Runnable {
 
     public void setBullets(Vector<Bullet> bullets) {
         this.bullets = bullets;
+    }
+
+    public static Vector<EnemyTank> getEnemyTanks() {
+        return enemyTanks;
+    }
+
+    public static void setEnemyTanks(Vector<EnemyTank> enemyTanks) {
+        EnemyTank.enemyTanks = enemyTanks;
     }
 }

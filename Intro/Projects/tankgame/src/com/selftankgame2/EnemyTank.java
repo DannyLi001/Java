@@ -1,0 +1,131 @@
+package com.selftankgame2;
+
+
+import java.util.Vector;
+
+/**
+ * @author Danny
+ */
+@SuppressWarnings({"all"})
+public class EnemyTank extends Tank implements Runnable {
+    private int step = 30;
+    private int moveSleepT = 30;
+    private int bulletAllow = 3;
+
+    public EnemyTank(int x, int y) {
+        super(x, y);
+    }
+
+    private static Vector<EnemyTank> tanks = new Vector<>();
+
+    public static void setTanks(Vector<EnemyTank> tanks) {
+        EnemyTank.tanks = tanks;
+    }
+
+
+    @Override
+    public void run() {
+        while (true) {
+            // shooting bullets
+            if (isAlive() && getBullets().size() < bulletAllow) {
+                Bullet bullet = null;
+                switch (getDir()) {
+                    case 0:
+                        bullet = new Bullet(getX() + 20, getY(), getDir());
+                        break;
+                    case 1:
+                        bullet = new Bullet(getX() + 60, getY() + 20, getDir());
+                        break;
+                    case 2:
+                        bullet = new Bullet(getX() + 20, getY() + 60, getDir());
+                        break;
+                    case 3:
+                        bullet = new Bullet(getX(), getY() + 20, getDir());
+                        break;
+
+                }
+                getBullets().add(bullet);
+                Thread thread = new Thread(bullet);
+                thread.start();
+            }
+
+
+            // randomly moving
+            switch (getDir()) {
+                case 0:
+                    for (int i = 0; i < step; i++) {
+                        if (!isTouching())
+                            moveUp();
+                        try {
+                            Thread.sleep(moveSleepT);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+
+                    }
+                    break;
+                case 1:
+                    for (int i = 0; i < step; i++) {
+                        if (!isTouching())
+                            moveRight();
+                        try {
+                            Thread.sleep(moveSleepT);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    break;
+                case 2:
+                    for (int i = 0; i < step; i++) {
+                        if (!isTouching())
+                            moveDown();
+                        try {
+                            Thread.sleep(moveSleepT);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    break;
+                case 3:
+                    for (int i = 0; i < step; i++) {
+                        if (!isTouching())
+                            moveLeft();
+                        try {
+                            Thread.sleep(moveSleepT);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    break;
+            }
+            setDir((int) (Math.random() * 4));
+            if (!isAlive()) {
+                break;
+            }
+        }
+    }
+
+    public int getStep() {
+        return step;
+    }
+
+    public void setStep(int step) {
+        this.step = step;
+    }
+
+    public int getMoveSleepT() {
+        return moveSleepT;
+    }
+
+    public void setMoveSleepT(int moveSleepT) {
+        this.moveSleepT = moveSleepT;
+    }
+
+    public int getBulletAllow() {
+        return bulletAllow;
+    }
+
+    public void setBulletAllow(int bulletAllow) {
+        this.bulletAllow = bulletAllow;
+    }
+}

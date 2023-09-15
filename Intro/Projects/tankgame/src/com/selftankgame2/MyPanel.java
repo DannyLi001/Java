@@ -1,20 +1,29 @@
-package com.draw.tankgame;
+package com.selftankgame2;
+
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.io.File;
 import java.util.Vector;
 
 /**
- * @author
+ * @author Danny
+ * add health bar for both enemy and player
+ * add multi player
+ * add boss
+ * add sound
+ * add score system
+ * add ranking board
  */
 @SuppressWarnings({"all"})
 public class MyPanel extends JPanel implements KeyListener, Runnable {
     // MyTank
     MyTank myTank = null;
     // enemyTanks
-    Vector<EnemyTank> enemyTanks = new Vector<>();
+    static Vector<EnemyTank> enemyTanks = new Vector<>();
+    // nodes to restore previous game
     Vector<Node> nodes = new Vector<>();
     int enemyTankSize = 5;  // number of enemies
     // explosion
@@ -24,106 +33,136 @@ public class MyPanel extends JPanel implements KeyListener, Runnable {
     Image image2 = null;
     Image image3 = null;
 
+    // initialize game
     public MyPanel(String key) {
-        Recorder.setEnemyTanks(enemyTanks);
         myTank = new MyTank(500, 500);
         myTank.setSpeed(5);
+        Tank.setMyTank(myTank);
+
+        File file = new File(Recorder.getRecordFile());
+        if(file.exists()){
+            nodes = Recorder.getNodes();
+        } else {
+            if(key.equals("2")){
+                System.out.println("NO PREVIOUS GAME FOUND");
+                key = "1";
+            }
+        }
+
         switch (key){
             case "1":
                 for (int i = 0; i < enemyTankSize; i++) {
                     // create each enemy tank
                     EnemyTank enemyTank = new EnemyTank((100 * (i + 1)), 0);
-                    EnemyTank.setEnemyTanks(enemyTanks);
                     enemyTank.setDir(2);
-                    // make thread to let them move randomly
+                    // make thread to each enemy tank
                     new Thread(enemyTank).start();
+                    // enemy tank shoots
                     Bullet bullet = new Bullet(enemyTank.getX() + 20, enemyTank.getY() + 60, enemyTank.getDir());
                     enemyTank.getBullets().add(bullet);
+                    // make thread to each bullet
                     new Thread(bullet).start();
                     // add it to enemy tanks vector
                     enemyTanks.add(enemyTank);
                 }
                 break;
             case "2":
-                nodes = Recorder.getNodes();
                 for (int i = 0; i < nodes.size(); i++) {
                     Node node = nodes.get(i);
                     // create each enemy tank
                     EnemyTank enemyTank = new EnemyTank(node.getX(), node.getY());
-                    EnemyTank.setEnemyTanks(enemyTanks);
                     enemyTank.setDir(node.getDir());
-                    // make thread to let them move randomly
+                    // make thread to each enemy tank
                     new Thread(enemyTank).start();
+                    // enemy tank shoots
                     Bullet bullet = new Bullet(enemyTank.getX() + 20, enemyTank.getY() + 60, enemyTank.getDir());
                     enemyTank.getBullets().add(bullet);
+                    // make thread to each bullet
                     new Thread(bullet).start();
                     // add it to enemy tanks vector
                     enemyTanks.add(enemyTank);
                 }
                 break;
         }
+//        System.out.println(MyPanel.class.getResource("/explode_1.gif").getPath());
+        // get explode image
+        image1 = Toolkit.getDefaultToolkit().getImage(com.tankgame.MyPanel.class.getResource("/explode_1.gif"));
+        image2 = Toolkit.getDefaultToolkit().getImage(com.tankgame.MyPanel.class.getResource("/explode_2.gif"));
+        image3 = Toolkit.getDefaultToolkit().getImage(com.tankgame.MyPanel.class.getResource("/explode_3.gif"));
 
-
-        image1 = Toolkit.getDefaultToolkit().getImage(MyPanel.class.getResource("/explode_1.gif"));
-        image2 = Toolkit.getDefaultToolkit().getImage(MyPanel.class.getResource("/explode_2.gif"));
-        image3 = Toolkit.getDefaultToolkit().getImage(MyPanel.class.getResource("/explode_3.gif"));
 
         // play sound
         new AePlayWave("src\\sound.wav").start();
     }
 
-
-
-    public void showInfo(Graphics g) {
-        g.setColor(Color.BLACK);
-        Font font = new Font("Times New Roman", Font.BOLD, 25);
-        g.setFont(font);
-
-        g.drawString("enemy killed", 1020, 30);
-        drawTank(1020, 60, g, 0, 1);
-        g.setColor(Color.BLACK);
-        g.drawString(Recorder.getEnemyKilledNum() + "",1080,100);
+    // check if a tank got hit
+    public Tank hitTank(Bullet bullet, Tank tank) {
+        switch (tank.getDir()) {
+            // up and down
+            case 0:
+            case 2:
+                if (bullet.getX() > tank.getX() && bullet.getX() < tank.getX() + 40
+                        && bullet.getY() > tank.getY() && bullet.getY() < tank.getY() + 60) {
+                    bullet.setAlive(false);
+                    tank.setAlive(false);
+                    Explosion explosion = new Explosion(tank.getX(), tank.getY());
+                    explosions.add(explosion);
+                    return tank;
+                }
+                // left and right
+            case 1:
+            case 3:
+                if (bullet.getX() > tank.getX() && bullet.getX() < tank.getX() + 60
+                        && bullet.getY() > tank.getY() && bullet.getY() < tank.getY() + 40) {
+                    bullet.setAlive(false);
+                    tank.setAlive(false);
+                    Explosion explosion = new Explosion(tank.getX(), tank.getY());
+                    explosions.add(explosion);
+                    return tank;
+                }
+        }
+        return null;
     }
 
+    // check if myTank got hit
     public void hitMe() {
+        if (enemyTanks == null)
+            return;
+        // iterate through each bullet from each enemy tank
         for (int i = 0; i < enemyTanks.size(); i++) {
             EnemyTank enemyTank = enemyTanks.get(i);
+            if (enemyTank.getBullets() == null)
+                return;
             for (int j = 0; j < enemyTank.getBullets().size(); j++) {
-                if (enemyTank.getBullets().get(j) != null && enemyTank.getBullets().get(j).isAlive() && myTank.isAlive()) {
-                    hitEnemy(enemyTank.getBullets().get(j), myTank);
+                if (enemyTank.getBullets().get(j).isAlive() && myTank.isAlive()) {
+                    Tank tank = hitTank(enemyTank.getBullets().get(j), myTank);
+                    // myTank got hit
+                    if (tank == myTank) {
+                        System.out.println("game over");
+                    }
                 }
             }
         }
     }
 
-    public void hitEnemy(Bullet bullet, Tank enemyTank) {
-        switch (enemyTank.getDir()) {
-            // up and down
-            case 0:
-            case 2:
-                if (bullet.getX() > enemyTank.getX() && bullet.getX() < enemyTank.getX() + 40
-                        && bullet.getY() > enemyTank.getY() && bullet.getY() < enemyTank.getY() + 60) {
-                    bullet.setAlive(false);
-                    enemyTank.setAlive(false);
-                    Explosion explosion = new Explosion(enemyTank.getX(), enemyTank.getY());
-                    explosions.add(explosion);
-                    enemyTanks.remove(enemyTank);
+    // check if enemy tank got hit
+    public void hitEnemy() {
+        if (enemyTanks == null)
+            return;
+        // iterate through each enemy and each of my bullets
+        for (int i = 0; i < enemyTanks.size(); i++) {
+            EnemyTank enemyTank = enemyTanks.get(i);
+            if (myTank.getBullets() == null)
+                return;
+            for (int j = 0; j < myTank.getBullets().size(); j++) {
+                Bullet bullet = myTank.getBullets().get(j);
+                Tank tank = hitTank(bullet, enemyTank);
+                if (tank != null) {
+                    // if enemy tank got hit, remove it from vector
+                    enemyTanks.remove(tank);
                     Recorder.addEnemyKilled();
                 }
-                break;
-            // left and right
-            case 1:
-            case 3:
-                if (bullet.getX() > enemyTank.getX() && bullet.getX() < enemyTank.getX() + 60
-                        && bullet.getY() > enemyTank.getY() && bullet.getY() < enemyTank.getY() + 40) {
-                    bullet.setAlive(false);
-                    enemyTank.setAlive(false);
-                    Explosion explosion = new Explosion(enemyTank.getX(), enemyTank.getY());
-                    explosions.add(explosion);
-                    enemyTanks.remove(enemyTank);
-                    Recorder.addEnemyKilled();
-                }
-                break;
+            }
         }
     }
 
@@ -136,23 +175,28 @@ public class MyPanel extends JPanel implements KeyListener, Runnable {
     // keyboard Listener
     @Override
     public void keyPressed(KeyEvent e) {
+        // do nothing if game over
+        if (!myTank.isAlive()) {
+            return;
+        }
+        // AWSD for movement and SPACE for shooting
         if (e.getKeyCode() == KeyEvent.VK_W) {          // moving up
             myTank.setDir(0);
-            myTank.moveUp();
+            if (!myTank.isTouching())
+                myTank.moveUp();
         } else if (e.getKeyCode() == KeyEvent.VK_D) {   // moving right
             myTank.setDir(1);
-            myTank.moveRight();
+            if (!myTank.isTouching())
+                myTank.moveRight();
         } else if (e.getKeyCode() == KeyEvent.VK_S) {   // moving down
             myTank.setDir(2);
-            myTank.moveDown();
+            if (!myTank.isTouching())
+                myTank.moveDown();
         } else if (e.getKeyCode() == KeyEvent.VK_A) {   // moving left
             myTank.setDir(3);
-            myTank.moveLeft();
+            if (!myTank.isTouching())
+                myTank.moveLeft();
         } else if (e.getKeyCode() == KeyEvent.VK_SPACE) {   // shooting
-            // one bullet at a time
-//            if (myTank.bullet == null || !myTank.bullet.isAlive())
-//                myTank.shoot();
-            // multi bullets at a time
             myTank.shoot();
 
         }
@@ -168,16 +212,17 @@ public class MyPanel extends JPanel implements KeyListener, Runnable {
     public void paint(Graphics g) {
         super.paint(g);
         g.fillRect(0, 0, 1000, 750);        // filling background
-        showInfo(g);
-        // draw tanks
+
+        // draw my tank
         if (myTank.isAlive()) {
             drawTank(myTank.getX(), myTank.getY(), g, myTank.getDir(), 0);
         }
+        // draw enemy tanks
         for (int i = 0; i < enemyTanks.size(); i++) {
             EnemyTank enemyTank = enemyTanks.get(i);
             if (enemyTank.isAlive()) {
                 drawTank(enemyTank.getX(), enemyTank.getY(), g, enemyTank.getDir(), 1);
-                // enemies' bullets
+                // draw enemies' bullets
                 for (int j = 0; j < enemyTank.getBullets().size(); j++) {
                     Bullet bullet = enemyTank.getBullets().get(j);
                     if (bullet.isAlive()) {
@@ -190,16 +235,8 @@ public class MyPanel extends JPanel implements KeyListener, Runnable {
             }
         }
 
-        // draw bullet
-
-        // one bullet at a time
-//        if (myTank.bullet != null && myTank.bullet.isAlive()) {
-//            g.setColor(Color.MAGENTA);
-//            g.fill3DRect(myTank.bullet.getX() - 1, myTank.bullet.getY() - 1, 3, 3, false);
-//        }
-
-        // multi bullets at a time
-        for (int i = 0; i < myTank.bullets.size(); i++) {
+        // draw my bullets
+        for (int i = 0; i < myTank.getBullets().size(); i++) {
             Bullet bullet = myTank.getBullets().get(i);
             if (bullet != null && bullet.isAlive()) {
                 g.setColor(Color.MAGENTA);
@@ -226,6 +263,9 @@ public class MyPanel extends JPanel implements KeyListener, Runnable {
             }
         }
 
+
+        // draw scoreboard
+        drawScoreboard(g);
     }
 
     /**
@@ -281,6 +321,18 @@ public class MyPanel extends JPanel implements KeyListener, Runnable {
         }
     }
 
+    //draw scoreboard
+    public void drawScoreboard(Graphics g) {
+        g.setColor(Color.BLACK);
+        Font font = new Font("Times New Roman", Font.BOLD, 25);
+        g.setFont(font);
+
+        g.drawString("Enemy Killed", 1020, 30);
+        drawTank(1020, 60, g, 0, 1);
+        g.setColor(Color.BLACK);
+        g.drawString(Recorder.getEnemyKilledNum() + "",1080,100);
+    }
+
     // add thread to refresh panel consistently
     @Override
     public void run() {
@@ -290,22 +342,9 @@ public class MyPanel extends JPanel implements KeyListener, Runnable {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
-            // check enemy tanks' existence
-            for (int i = 0; i < myTank.bullets.size(); i++) {
-                if (myTank.bullets.get(i) != null && myTank.bullets.get(i).isAlive()) {
-                    for (int j = 0; j < enemyTanks.size(); j++) {
-                        EnemyTank enemyTank = enemyTanks.get(j);
-                        hitEnemy(myTank.bullets.get(i), enemyTank);
-                    }
-                }
-            }
-//            if (myTank.bullet != null && myTank.bullet.isAlive()) {
-//                for (int i = 0; i < enemyTanks.size(); i++) {
-//                    EnemyTank enemyTank = enemyTanks.get(i);
-//                    hitEnemy(myTank.bullet, enemyTank);
-//                }
-//            }
 
+            // check enemy tanks' existence
+            hitEnemy();
 
             // check my tank's existence
             hitMe();
@@ -314,4 +353,3 @@ public class MyPanel extends JPanel implements KeyListener, Runnable {
     }
 
 }
-

@@ -17,26 +17,26 @@ public class Tank {
 
 
 
-    public void moveUp(){
-        if(y - speed < 0)
+    public void moveUp() {
+        if (y - speed < 0)
             return;
         y -= speed;
     }
 
-    public void moveRight(){
-        if(x + speed + 60 > 1000)
+    public void moveRight() {
+        if (x + speed + 60 > 1000)
             return;
         x += speed;
     }
 
-    public void moveDown(){
-        if(y + speed + 60 > 750)
+    public void moveDown() {
+        if (y + speed + 60 > 750)
             return;
         y += speed;
     }
 
-    public void moveLeft(){
-        if(x - speed < 0)
+    public void moveLeft() {
+        if (x - speed < 0)
             return;
         x -= speed;
     }
@@ -81,3 +81,4 @@ public class Tank {
         isAlive = alive;
     }
 }
+
