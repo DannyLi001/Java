@@ -3214,9 +3214,140 @@ public static void main(String[] args) throws IOException {
 }
 ```
 
+### 网络通讯
+
+概念：两台设备之间通过网络实现数据传输
+
+网络通信：将数据通过网络从一台设备传输到另一台设备
+
+java.net包下提供了一系列类和接口
+
+- 局域网: 覆盖范围最小, 覆盖一个教室或机房
+- 城域网:覆盖范围较大, 覆盖一个城市
+- 广域网:覆盖范围最大, 可以覆盖全国甚至全球, 万维网是广域网的代表
+
+ip地址:
+
+1. 概念: 用于唯一标识网络中的每一台主机
+2. 地址的组成 = 网络地址 + 主机地址
+   1. ipv4: 四字节(32位), 十进制
+   2. ipv6: 十六字节, 十六进制
+
+- ipv4地址分A,B,C,D,E类, 常用为ABC类
+
+#### 域名和端口
+
+##### 域名
+
+- 好处: 为了方便记忆
+- 概念: 将ip地址映射成域名
+
+##### 端口号
+
+- 概念: 用于标识计算机上某个特定的网络程序
+- 表示形式: 十进制, 两个字节
+- 0~1024端口已被占用
+
+#### 网络协议
+
+- TCP/IP 协议
+  - 传输控制协议/英特网互联协议
+  - 由网络层的ip协议和传输层的tcp协议组成的
+
+![TCP/IP](.\img\TCP_IP.jpg)
+
+![TCP/IP流程](.\img\TCP_IP_process.jpg)
+
+- TCP vs UDP
+
+  - TCP: 传输控制协议
+    - 使用协议前, 需要先建立TCP连接, 形成传输数据通道
+    - 传输前, 采用"三次握手"方式, 是**可靠的**
+    - TCP协议进行通信的两个应用进程: 客户端, 服务端
+    - 在连接中可进行大数据量的传输
+    - 传输完毕, 需要释放已建立的连接, **效率低**
+
+  ![三次握手](.\img\三次握手.gif)
+
+  - UDP
+    - 将数据, 源, 目的封装成数据包, 不需要建立连接
+    - 每个数据包的大小限制在64K内, 不适合传输大量数据
+    - 因无需连接, 故是**不可靠**的
+    - 发送数据结束时无需释放资源(因为不是面向连接的), **速度快**
 
 
+#### InetAddress 类
 
+```java
+InetAddress localHost = InetAddress.getLocalHost();
+System.out.println(localHost);
+
+InetAddress host = InetAddress.getByName("LAPTOP-KHRKSM31");
+System.out.println(host);
+
+InetAddress web = InetAddress.getByName("www.baidu.com");
+System.out.println(web);
+
+String hostAddress = host.getHostAddress();
+System.out.println(hostAddress);
+
+String hostName = web.getHostName();
+System.out.println(hostName);
+```
+
+#### Socket
+
+1. 套接字(Socket)开发网络应用被广泛采用, 以至于成为事实上的标准
+2. 通信的两端都要有Socket, 是两台机器间通信的端点
+3. 网络通信其实就是Socket间的通信
+4. Socket允许程序把网络连接当成一个流, 数据在两个Socket间通过IO传输
+5. 一般主动发起通信的应用程序属于客户端, 等待通信请求的为服务端
+6. 有两种编程方式: TCP 和 UDP
+
+#### TCP网络通讯编程
+
+- 基于客户端----服务端的网络通信
+- 底层使用的是TCP/IP协议
+- 基于Socket的TCP编程
+
+```java
+// 客户端
+public static void main(String[] args) throws IOException {	
+    // 连接InetAddress.getLocalHost()这台主机的9999端口
+    Socket socket = new Socket(InetAddress.getLocalHost(), 9999);
+    // 通过socket获取输出流对象
+    OutputStream outputStream = socket.getOutputStream();
+    // 通过输出流 写入数据到数据通道
+    outputStream.write("hello server".getBytes());
+    // 关闭流对象和socket 必须关闭
+    outputStream.close();
+    socket.close();
+}
+```
+
+```java
+// 服务端
+public static void main(String[] args) throws IOException {
+    // 9999端口监听 不能有其他程序在同一个Socket监听
+    ServerSocket serverSocket = new ServerSocket(9999);
+    // 当没有客户端连接9999端口，程序会堵塞，等待连接
+    // 如果有客户端连接, 则会返回Socket对象, 程序继续
+    // ServerSocket可以通过accept返回多个Socket[多并发/多个客户端连接服务器的并发]
+    Socket accept = serverSocket.accept();
+
+    InputStream inputStream = accept.getInputStream();
+
+    byte[] buf = new byte[1024];
+    int readLen = 0;
+    while((readLen = inputStream.read(buf)) != -1){
+        System.out.println(new String(buf,0,readLen));
+    }
+    // 关闭输入流和socket
+    inputStream.close();
+    accept.close();
+    serverSocket.close();
+}
+```
 
 
 
