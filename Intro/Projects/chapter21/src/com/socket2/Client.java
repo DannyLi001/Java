@@ -1,11 +1,8 @@
-package com.socket_;
+package com.socket2;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.InetAddress;
 import java.net.Socket;
-import java.net.UnknownHostException;
 
 /**
  * @author
@@ -16,19 +13,19 @@ public class Client {
         Socket socket = new Socket(InetAddress.getLocalHost(), 9999);
         // 通过socket获取输出流对象
         OutputStream outputStream = socket.getOutputStream();
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(outputStream));
         // 通过输出流 写入数据到数据通道
-        outputStream.write("hello server".getBytes());
+        bw.write("hello server");
+        bw.newLine();
+        bw.flush();
         socket.shutdownOutput();
 
         InputStream inputStream = socket.getInputStream();
-        byte[] buf = new byte[1024];
-        int readLen = 0;
-        while((readLen = inputStream.read(buf)) != -1){
-            System.out.println(new String(buf,0,readLen));
-        }
+        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
+        System.out.println(br.readLine());
         // 关闭流对象和socket 必须关闭
-        outputStream.close();
-        inputStream.close();
+        br.close();
+        bw.close();
         socket.close();
 
     }

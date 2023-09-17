@@ -3312,42 +3312,134 @@ System.out.println(hostName);
 
 ```java
 // 客户端
-public static void main(String[] args) throws IOException {	
-    // 连接InetAddress.getLocalHost()这台主机的9999端口
-    Socket socket = new Socket(InetAddress.getLocalHost(), 9999);
-    // 通过socket获取输出流对象
-    OutputStream outputStream = socket.getOutputStream();
-    // 通过输出流 写入数据到数据通道
-    outputStream.write("hello server".getBytes());
-    // 关闭流对象和socket 必须关闭
-    outputStream.close();
-    socket.close();
+// 连接InetAddress.getLocalHost()这台主机的9999端口
+Socket socket = new Socket(InetAddress.getLocalHost(), 9999);
+// 通过socket获取输出流对象
+OutputStream outputStream = socket.getOutputStream();
+// 通过输出流 写入数据到数据通道
+outputStream.write("hello server".getBytes());
+socket.shutdownOutput();
+
+InputStream inputStream = socket.getInputStream();
+byte[] buf = new byte[1024];
+int readLen = 0;
+while((readLen = inputStream.read(buf)) != -1){
+    System.out.println(new String(buf,0,readLen));
 }
+// 关闭流对象和socket 必须关闭
+outputStream.close();
+inputStream.close();
+socket.close();
 ```
 
 ```java
 // 服务端
-public static void main(String[] args) throws IOException {
-    // 9999端口监听 不能有其他程序在同一个Socket监听
-    ServerSocket serverSocket = new ServerSocket(9999);
-    // 当没有客户端连接9999端口，程序会堵塞，等待连接
-    // 如果有客户端连接, 则会返回Socket对象, 程序继续
-    // ServerSocket可以通过accept返回多个Socket[多并发/多个客户端连接服务器的并发]
-    Socket accept = serverSocket.accept();
+// 9999端口监听 不能有其他程序在同一个Socket监听
+ServerSocket serverSocket = new ServerSocket(9999);
+// 当没有客户端连接9999端口，程序会堵塞，等待连接
+// 如果有客户端连接, 则会返回Socket对象, 程序继续
+// ServerSocket可以通过accept返回多个Socket[多并发/多个客户端连接服务器的并发]
+Socket accept = serverSocket.accept();
 
-    InputStream inputStream = accept.getInputStream();
+InputStream inputStream = accept.getInputStream();
 
-    byte[] buf = new byte[1024];
-    int readLen = 0;
-    while((readLen = inputStream.read(buf)) != -1){
-        System.out.println(new String(buf,0,readLen));
-    }
-    // 关闭输入流和socket
-    inputStream.close();
-    accept.close();
-    serverSocket.close();
+byte[] buf = new byte[1024];
+int readLen = 0;
+while((readLen = inputStream.read(buf)) != -1){
+    System.out.println(new String(buf,0,readLen));
 }
+
+OutputStream outputStream = accept.getOutputStream();
+outputStream.write("this is server".getBytes());
+
+accept.shutdownOutput();
+// 关闭输入流和socket
+inputStream.close();
+outputStream.close();
+accept.close();
+serverSocket.close();
 ```
+
+关于字符流，使用InputStreamReader和OutputStreamWriter来转换字节流到字符流
+
+还有不同在于使用newLine代替shutdownOutput，以及使用readLine来获取字符流
+
+socket.getOutputStream相关的流要在最后关闭，否则报错
+
+##### netstat
+
+- 指令用来查看端口监听情况和网络连接情况
+
+当客户端连接到服务端后，实际上客户端也是通过一个端口和服务端进行通讯的，这个端口是TCP/IP来分配的，是不确定的
+
+#### UDP 网络通信编程
+
+- 类DatagramSocket和DatagramPacket[数据包/数据报] 实现了基于UDP协议网络程序
+- UDP数据报通过数据报套接字DatagramSocket发送和接收, 系统不保证UDP数据报一定能安全送到目的地, 也不能确定什么时候可以抵达
+- DatagramPacket对象封装了UDP数据报, 在数据报中包含了发送端的IP地址和端口号以及接收端的IP地址和端口号
+- UDP协议中每个数据报都给出了完整的地址信息, 因此无需建立发送方和接收方的连接
+
+```java
+// 创建DatagramSocket对象, 准备在9999端口接收
+DatagramSocket socket = new DatagramSocket(9999);
+// 构建一个DatagramPacket对象, 准备接收
+// 数据报最大64k
+byte[] buf = new byte[1024];
+DatagramPacket datagramPacket = new DatagramPacket(buf, buf.length);
+
+// 调用接收方法, 将通过网络传输的DatagramPacket对象
+// 填充到packet对象
+// 当数据报发送到本机9999端口时, 就会接收到数据
+// 如果没有数据报发送到, 就会堵塞
+socket.receive(datagramPacket);
+
+// 把packet拆包, 取出数据
+int length = datagramPacket.getLength();
+byte[] data = datagramPacket.getData();
+
+String s = new String(data, 0, length);
+System.out.println(s);
+
+data = "hello, too".getBytes();
+DatagramPacket packet = new DatagramPacket(data, data.length, InetAddress.getByName("192.168.0.100"), 6060);
+// 发送数据
+socket.send(packet);
+
+socket.close();
+```
+
+### 项目开发流程 简介
+
+1. 需求分析
+   - 需求分析师: 懂技术+行业
+     - 出一个需求分析报告, 该项目功能, 客户具体要求
+2. 设计阶段
+   - 架构师/项目经理
+     - 设计工作(UML类图, 流程图, 模块设计, 数据库, 构架)
+     - 原型开发
+     - 组建团队
+3. 实现阶段
+   - 程序员
+     - 完成架构师的模块功能
+     - 测试自己模块
+4. 测试阶段
+   - 测试工程师
+     - 单元测试, 白盒测试, 测试用例, 黑盒测试, 集成测试
+5. 实施阶段
+   - 实施工程师
+     - 将项目正确的部署到客户的平台, 并保证正常运行
+6. 维护阶段
+   - 发现bug解决/项目升级
+
+
+
+
+
+
+
+
+
+
 
 
 

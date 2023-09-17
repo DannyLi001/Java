@@ -1,9 +1,6 @@
-package com.socket_;
+package com.socket2;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -20,21 +17,21 @@ public class Server {
         Socket accept = serverSocket.accept();
 
         InputStream inputStream = accept.getInputStream();
+        BufferedReader br = new BufferedReader(new InputStreamReader(inputStream));
 
-
-        byte[] buf = new byte[1024];
-        int readLen = 0;
-        while((readLen = inputStream.read(buf)) != -1){
-            System.out.println(new String(buf,0,readLen));
-        }
+        System.out.println(br.readLine());
 
         OutputStream outputStream = accept.getOutputStream();
-        outputStream.write("this is server".getBytes());
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(outputStream));
+        bw.write("this is server");
+        bw.newLine();
+        bw.flush();
+
 
         accept.shutdownOutput();
         // 关闭输入流和socket
-        inputStream.close();
-        outputStream.close();
+        bw.close();
+        br.close();
         accept.close();
         serverSocket.close();
 
