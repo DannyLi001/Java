@@ -65,7 +65,8 @@ public class UserClientService {
         }
     }
 
-    //
+    
+    // logout
     public void logout(){
         Message message = new Message();
         message.setMesType(MessageType.MESSAGE_CLIENT_EXIT);

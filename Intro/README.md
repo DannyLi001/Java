@@ -3431,9 +3431,144 @@ socket.close();
 6. 维护阶段
    - 发现bug解决/项目升级
 
+### 反射
 
+- 反射机制允许程序在运行期间借助于Reflection API取得任何类的内部信息(比如成员变量, 构造器, 成员方法等), 并能操作对象的属性及方法. 反射在设计模式和框架底层都会用到
+- 加载完类后, 在堆中就产生了一个Class类型的对象(一个类只有一个Class对象), 这个对象包含了类的完整结构信息. 通过这个对象得到类的结构
 
+![Java程序在计算机的三个阶段](.\img\Three_Stages.jpg)
 
+反射机制可以完成:
+
+1. 运行时判断任意一个对象所属的类
+2. 运行时构造任意一个类的对象
+3. 运行时得到任意一个类所具有的成员变量和方法
+4. 运行时调用任意一个对象的成员变量和方法
+5. 生成动态代理
+
+```java
+// 基本使用
+// 先从properties中读取信息
+Properties properties = new Properties();
+properties.load(new FileReader("src\\re.properties"));
+String classfullpath = properties.get("classfullpath").toString();
+String methodName = properties.get("method").toString();
+// 使用反射机制解决
+// 1. 加载类, 返回Class类型的对象cls
+Class cls = Class.forName(classfullpath);
+// 生成一个Cat对象
+Object o = cls.newInstance();
+System.out.println(o.getClass());
+// 通过cls得到加载的类的methodName方法
+Method method = cls.getMethod(methodName);
+// 通过method对象调用Cat类中的hi方法
+// 方法.invoke(对象)
+method.invoke(o);
+
+// getField不能得到私有属性
+Field age = cls.getField("age");
+// 成员变量对象.get(对象)
+System.out.println(age.get(o));
+
+// 无参构造器
+Constructor constructor = cls.getConstructor();
+System.out.println(constructor);
+// 带参构造器
+Constructor constructor1 = cls.getConstructor(String.class);
+System.out.println(constructor1);
+```
+
+- 优点: 可以动态的创建和使用对象(也是构架底层核心), 使用灵活, 没有反射机制, 框架技术就失去底层支持
+
+- 缺点: 使用反射基本是解释执行, 对执行速度有影响
+  - 反射调用优化 - 关闭访问检查
+    1. Method和Field, Constructor对象都有setAccessible()方法
+    2. setAccessible作用是启动和禁用访问安全检查的开关
+    3. 参数值为true表示 反射的对象在使用时取消访问检查, 提高反射的效率. 参数值为false则表示反射的对象执行访问检查
+
+### Class 类
+
+1. Class也是类, 所以继承Object类
+2. Class类对象不是new出来的, 是系统创建的
+3. 对于某个类的Class类对象, 在内存中只有一份, 因为类只加载一次
+4. 每个类的实例都会记得自己是由哪个Class实例所生成
+5. 通过Class可以完整的得到一个类的完整结构, 通过一系列API
+6. Class对象是存放在堆的
+7. 类的字节码二进制数据, 是存放在方法区的, 有的地方称为类的元数据
+
+```java
+String classAllPath = "com.Cat";
+try {
+    Class<?> cls = Class.forName(classAllPath);
+    System.out.println(cls);
+    System.out.println(cls.getClass());
+    System.out.println(cls.getPackageName());
+    System.out.println(cls.getName());
+    Object o = cls.getDeclaredConstructor().newInstance();
+    Cat cat = (Cat) o;
+    System.out.println(cat);
+    Field age = cls.getField("age");
+    System.out.println(age.get(cat));
+    age.set(cat, 51);
+    System.out.println(cat.age);
+    Field[] fields = cls.getFields();
+    for (Field f1 :fields) {
+        System.out.println(f1.getName());
+    }
+} catch (Exception e) {
+    e.printStackTrace();
+}
+```
+
+- 如下类型有Class对象:
+  - 外部类, 成员内部类, 静态内部类, 局部内部类, 匿名内部类
+  - interface
+  - 数组
+  - enum
+  - annotation
+  - 基本数据类型
+  - void
+
+#### 类加载
+
+反射机制是java实现动态语言的关键, 也是通过反射实现类动态加载
+
+- 静态加载: 编译时加载相关的类, 如果没有则报错, 依赖性太大
+- 动态加载: 运行时加载需要的类, 如果运行时不用该类, 则不报错, 降低了依赖性
+
+```java
+switch (key){
+    case "1":
+        Cat cat = new Cat;  // 静态加载 没有Cat类直接报错
+        break;
+    case "2":
+        Class<?> cls = Class.forName("com.Cat");    //动态加载
+        Object o = cls.getConstructor().newInstance();
+        Method m = cls.getMethod("hi");
+        m.invoke(o);
+        break;
+```
+
+![类加载过程](.\img\类加载过程.jpg)
+
+- 加载阶段:
+  - JVM在该阶段的主要目的是将字节码从不同的数据源转化为二进制字节流加载到内存中, 并生成一个代表该类的java.lang.Class对象
+- 连接阶段 - 验证:
+  - 目的是为了确保Class文件的字节流中包含的信息符合当前虚拟机的要求, 并且不会危害虚拟机自身的安全
+  - 包括: 文件格式验证, 元数据验证, 字节码验证和符号引用验证
+  - 可以考虑使用-Xverify:none参数来关闭大部分的类验证措施, 缩短虚拟机类加载的时间
+
+- 连接阶段 - 准备:
+  - JVM会在该阶段对静态变量, 分配内存并默认初始化(对应数据类型的默认初始值) 这些变量所使用的内存都将在方法区中进行分配
+
+- 连接阶段 - 解析:
+  - 虚拟机将常量池内的符号引用替换为直接引用的过程
+- 初始化
+  - 到初始化阶段, 才真正开始执行类中定义的Java程序代码, 此阶段执行\<clinit>()方法的过程
+  - \<clinit>()方法是由编译器按语句在源文件中出现的顺序, 一次自动收集类中的所有**静态变量**的赋值动作和**静态代码块**中的语句, 并进行合并
+  - 虚拟机会保证一个类的\<clinit>()方法在多线程环境中被正确地枷锁, 同步, 如果多个线程同时去初始化一个类, 那么只会有一个线程去执行这个类的\<clinit>()方法, 其他线程都需要阻塞等待, 直到活动线程执行\<clinit>()方法完毕
+
+![类加载各阶段](.\img\类加载各阶段.jpg)
 
 
 

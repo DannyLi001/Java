@@ -1,9 +1,12 @@
 package com.Chatclient.view;
 
 
+import com.Chatclient.service.FileClientService;
+import com.Chatclient.service.MessageClientService;
 import com.Chatclient.service.UserClientService;
 
 
+import java.io.File;
 import java.util.Scanner;
 
 /**
@@ -12,6 +15,8 @@ import java.util.Scanner;
 public class ChatView {
     private boolean loop = true;
     private UserClientService userClientService = new UserClientService();
+    private MessageClientService messageClientService = new MessageClientService();
+    private FileClientService fileClientService = new FileClientService();
 
     // test main function
     public static void main(String[] args) {
@@ -20,6 +25,7 @@ public class ChatView {
 
     private void mainMenu() {
         Scanner scanner = new Scanner(System.in);
+        String content = "";
         while (loop) {
             // login menu
             System.out.println("=======Welcome========");
@@ -36,9 +42,9 @@ public class ChatView {
                     String pwd = scanner.next();
 
                     // user interface
-                    if (userClientService.checkUser(userID,pwd)) {
+                    if (userClientService.checkUser(userID, pwd)) {
                         System.out.println("========Welcome " + userID + "=========");
-                        while(loop){
+                        while (loop) {
                             System.out.println("\n==========Sub Menu " + userID + "===============");
                             System.out.println("\t\t1 Show Online User List");
                             System.out.println("\t\t2 Group Message");
@@ -48,15 +54,31 @@ public class ChatView {
                             System.out.print("Please Enter: ");
 
                             key = scanner.next();
-                            switch (key){
+                            switch (key) {
                                 case "1":
                                     userClientService.onlineUserList();
                                     break;
                                 case "2":
+                                    System.out.println("Users you want to send message: ");
+                                    System.out.println("Message Content: ");
+                                    content = scanner.next();
+                                    messageClientService.sendMessageToAll(content, userID);
                                     break;
                                 case "3":
+                                    System.out.print("User you want to chat with (Online): ");
+                                    String getterID = scanner.next();
+                                    System.out.print("Message Content: ");
+                                    content = scanner.next();
+                                    messageClientService.sendMessageToOne(content, userID, getterID);
                                     break;
                                 case "4":
+                                    System.out.print("User you want to send to: ");
+                                    String receiverID = scanner.next();
+                                    System.out.print("The file path: ");
+                                    String srcPath = scanner.next();
+                                    System.out.print("The file dest: ");
+                                    String destPath = scanner.next();
+                                    fileClientService.sendFileToOne(srcPath, destPath, userID, receiverID);
                                     break;
                                 case "9":
                                     loop = false;

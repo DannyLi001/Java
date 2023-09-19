@@ -40,6 +40,7 @@ public class ChatServer {
     public ChatServer(){
         System.out.println("port 9999 is listening");
         try {
+            new Thread(new SendNewsToAllService()).start();
             serverSocket = new ServerSocket(9999);
             while(true){
                 Socket socket = serverSocket.accept();
