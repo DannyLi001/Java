@@ -3570,13 +3570,123 @@ switch (key){
 
 ![类加载各阶段](.\img\类加载各阶段.jpg)
 
+##### 反射暴破
 
+1. 先通过`Class.forName()`获取class对象
+2. 在class对象上通过`class对象.getdeclared...`方法来获取私有的 构造器, 字段, 或者方法
+3. 将获得的构造器,字段,方法对象的`setAccessible()`设置为true 进行暴破
+4. 可以使用暴破后的构造器,字段,和方法
 
+```java
+// 使用class对象来创建该class的对象
+Class<?> carClass = Class.forName("com.reflection.Car");
+Object car1 = carClass.getConstructor().newInstance();	// 无参public构造器
+System.out.println(car1);
 
+Object car2 = carClass.getConstructor(String.class).newInstance("new");	// 有参public构造器
+System.out.println(car2);
 
+// 有参private构造器
+Constructor<?> declaredConstructor = carClass.getDeclaredConstructor(String.class, double.class);
+declaredConstructor.setAccessible(true);    // 暴破
+Object car3 = declaredConstructor.newInstance("new2", 500000);
+System.out.println(car3);
+```
 
+### MySQL
 
+- 创建数据库：
+  - `CREATE DATABASE [IF NOT EXISTS] db_name`
+  - 默认CHARACTER SET: utf8
+  - 默认COLLATE: utf8_general_ci (不区分大小写)
 
+- 删除数据库：
+  - `DROP DATABASE [IF EXITS] db_name`
+- 显示数据库：
+  - `SHOW DATABASES`
+- 显示数据库创建语句
+  - `SHOW CREATE DATABASE db_name`
+- 备份恢复数据库
+  - 备份 DOS
+    - `mysqldump -u root -p -B db1 db2 > 保存地址.sql`
+  - 恢复 MySQL命令行
+    - `source 保存地址.sql`
+
+- 创建表:
+  - `CREATE TABLE table_name(filed_name datatype, ...) character set字符集 collate校对准则 engin存储引擎`
+- 修改表:
+  - 添加列
+    - `ALTER TABLE table_name ADD col datatype` 
+  - 修改列
+    -  `ALTER TABLE table_name MODIFY col datatype`
+  - 删除列
+    - `ALTER TABLE table_name DROP col`
+  - 修改表名
+    - `RENAME TABLE table_name TO new_name`
+  - 修改表字符集
+    - `ALTER TABLE table_name CHARACTER SET set_name`
+
+```mysql
+ALTER TABLE t3 ADD image VARCHAR(32) NOT NULL DEFAULT '' AFTER `resume`;
+ALTER TABLE t3 DROP image;
+ALTER TABLE t3 MODIFY job VARCHAR(60);
+ALTER TABLE t3 DROP sex;
+RENAME TABLE t3 TO employee;
+DESC employee
+ALTER TABLE employee CHARACTER SET utf8;
+ALTER TABLE employee CHANGE `name` user_name VARCHAR(32) NOT NULL DEFAULT ''; 
+DROP TABLE t3;
+```
+
+#### Mysql 数据类型
+
+- 数值类型
+  - 整型
+    - tinyint 一个字节
+    - smallint 两个字节
+    - medium 三个字节
+    - int 四个字节
+    - bigint 八个字节
+  - 小数类型
+    - float 单精度 四个字节
+    - double 双精度 八个字节
+    - decimal M,D 大小不确定
+      - M 小数位数的总数 最大65
+      - D小数点后面的位数 最大30
+- 文本类型
+  - char 0-255
+  - varchar 0-2^16-1
+    - char(4) 这个4表示字符数 最大255, 不是字节数, 不管是中文还是字母都是放四个, 按字符计算 定义的4是固定大小
+    - varchar(4) 这个4表示字符数, 不管是字母还是中文都以定义好的表的编码来存放数据 定义的4是可变化的大小
+      - varchar本身还需要1-3个字节来记录存放内容长度
+  - text 0-2^16-1
+  - longtext 0-2^32-1
+- 二进制数据类型
+  - blob 0-2^16-1
+  - longblob 0-2^32-1
+- 日期类型
+  - date 日期 年月日
+  - time 时间 时分秒
+  - datetime 年月日 时分秒
+  - timestamp 时间戳
+
+```mysql
+CREATE TABLE t3(
+#	id TINYINT UNSIGHED
+	id TINYINT);
+```
+
+```mysql
+# 加入时间
+CREATE TABLE t2(
+	birthday DATE,
+	job_time DATETIME,
+	login_time TIMESTAMP NOT NULL
+		DEFAULT CURRENT_TIMESTAMP
+		ON UPDATE CURRENT_TIMESTAMP)
+SELECT * FROM t2;
+INSERT INTO t2(birthday, job_time) VALUES('2000-11-11','2022-11-11 10:12:21');
+```
 
 
 
