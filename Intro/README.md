@@ -3688,6 +3688,102 @@ SELECT * FROM t2;
 INSERT INTO t2(birthday, job_time) VALUES('2000-11-11','2022-11-11 10:12:21');
 ```
 
+#### 数据库CRUD
+
+- 向表中插入数据
+  - `INSERT INTO table_name [col] VALUES (val)`
+
+- 修改表中数据
+
+  - `UPDATE tbl_name SET [col] = [val] [WHERE ...]`
+
+- 删除表中数据
+
+  - `DELETE FROM tbl_name [WHERE ...]`
+
+- 查看表中数据
+
+  - `SELECT [DISTINCT] * | col [math expression] FROM tbl_name WHERE ...`
+
+  - order by 排序
+    - `SELECT col FROM table ORDER BY col ACS/DESC`
+
+  - count 统计
+    - `SELECT COUNT(*/col) FROM table WHERE ...`
+  - sum 合计
+    - `SELECT SUM(col) FROM table`
+  - avg 平均
+    - `SELECT AVG(col) FROM table`
+  - max/min 最大/最小
+    - `SELECT MAX(col)/MIN(col) FROM tabl`
+  - group by
+    - `SELECT col FROM table GROUP BY col HAVING math expression`
+
+- 字符串函数
+
+```mysql
+CHARSET(col) FROM table				# 返回字串字符集
+CONCAT(col, str, col) FROM table	# 连接字串
+UCASE(col) FROM table				# 转换成大写
+LCASE(col) FROM table				# 转换成小写
+LENGTH(col) FROM table				# string长度(按照字节)
+REPLACE(col,str,str) FROM table		# 在col中,将第一个str换成第二个str
+SUBSTRING(col,int,int) FROM table	# 从col的第一个int取第二个int长度
+```
+
+- 数学函数
+
+```mysql
+SELECT ABS(-10) FROM table			# 绝对值
+SELECT CEILING(1.1) FROM table		# 向上取整
+SELECT FLOOR(1.1) FROM table		# 向下取整
+SELECT FORMAT(1.234,2) FROM table	# 保留两位小数
+SELECT RAND([seed]) FROM table		# 生成随机数
+```
+
+- 日期函数
+
+```mysql
+SELECT CURRENT_DATE FROM table		# 当前日期
+SELECT CURRENT_TIME FROM table		# 当前时间
+SELECT CURRENT_TIMESTAMP FROM table	# 当前时间戳
+SELECT DATE(datetime)				# 返回datetime的日期部分
+SELECT DATE_ADD(date,INTERVAL val type)	# 在date中加上val时间或日期
+SELECT DATE_SUB(date,INTERVAL val type)	# 在date中减去val时间或日期
+SELECT DATEDIFF(date1,date2)		# 两个日期差
+SELECT NOW							# 当前时间
+SELECT FROM_UNIXTIME() FROM table		# 返回一个从1970到现在的秒数
+SELECT UNIX_TIMESTAMP(int) FROM table	# 通过1970秒数转换成日期
+```
+
+- 加密/系统函数
+
+```mysql
+SELECT USER() FROM table			# 查询用户
+SELECT MD5(str) FROM table			# 为str算出一个MD5 32的字符串, 密码加密
+```
+
+- 流程控制
+
+```mysql
+IF(expr1,expr2,expr3)		# 三元运算
+IFNULL(expr1,expr2)			# 如果1为空,返回2.不为空,返回1
+SELECT CASE WHEN expr1 THEN expr2	# if-else
+			WHEN expr3 THEN expr4
+			ELSE expr5 END
+```
+
+- 分页查询
+
+```mysql
+SELECT * FROM table LIMIT int, int	# 第一个int从第几条读取第二个int条数
+						# 每页显示记录数*(第几页-1), 每页显示记录数
+```
+
+
+
+
+
 
 
 
@@ -3735,4 +3831,3 @@ INSERT INTO t2(birthday, job_time) VALUES('2000-11-11','2022-11-11 10:12:21');
 | ---------- | -------- | ------------------ | -------- |
 | ArrayList  | 可变数组 | 较低, 数组扩容     | 较高     |
 | LinkedList | 双向列表 | 较高, 通过链表追加 | 较低     |
-
