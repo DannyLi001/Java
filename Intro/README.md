@@ -4040,6 +4040,440 @@ DROP VIEW view1
 - 在登陆位置中可以通过使用127.%.%.%来指定某个区域登录
 - 删除用户时, 如果host不是%,需要明确指定 '用户'@'host值'
 
+### JDBC
+
+为了访问不同数据库同一的接口
+
+- 编写步骤
+  1. 注册驱动
+  2. 获取链接
+  3. 执行增删改查
+     - `executeQuery()`执行查
+     - `executeUpdate()`执行增删改
+  4. 释放资源
+
+#### 创建链接
+
+```java
+public class JdbcConnect {
+    public static void main(String[] args) throws SQLException {
+        Driver driver = new Driver();
+        String url = "jdbc:mysql://localhost:3306/db1";
+
+        // 用户名和密码放入到Properties对象
+        Properties properties = new Properties();
+        properties.setProperty("user", "root"); // 用户
+        properties.setProperty("password", "123");   // 密码
+        // 获得连接
+        Connection connect = driver.connect(url, properties);
+    }
+
+    @Test
+    public void connection2() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, SQLException {
+        Class<?> aClass = Class.forName("com.mysql.cj.jdbc.Driver");
+        Driver driver = (Driver)aClass.getConstructor().newInstance();
+        String url = "jdbc:mysql://localhost:3306/db1";
+
+        // 用户名和密码放入到Properties对象
+        Properties properties = new Properties();
+        properties.setProperty("user", "root"); // 用户
+        properties.setProperty("password", "123");   // 密码
+        // 获得连接
+        Connection connect = driver.connect(url, properties);
+    }
+
+    @Test
+    public void connection3() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException, SQLException {
+        Class<?> aClass = Class.forName("com.mysql.cj.jdbc.Driver");
+        Driver driver = (Driver)aClass.getConstructor().newInstance();
+
+        String url = "jdbc:mysql://localhost:3306/db1";
+        String user = "root";
+        String pwd = "123";
+
+        DriverManager.registerDriver(driver);
+        Connection connection = DriverManager.getConnection(url, user, pwd);
+    }
+
+    // 推荐
+    @Test
+    public void connection4() throws ClassNotFoundException, SQLException {
+        Class.forName("com.mysql.cj.jdbc.Driver");
+        // 底层代码块实现 DriverManager.registerDriver(driver);
+
+        String url = "jdbc:mysql://localhost:3306/db1";
+        String user = "root";
+        String pwd = "123";
+        Connection connection = DriverManager.getConnection(url, user, pwd);
+    }
+
+    @Test
+    public void connection5() throws IOException, ClassNotFoundException, SQLException {
+        Properties properties = new Properties;
+        properties.load(new FileInputStream("src\\...properties"));
+        String user = properties.getProperty("user");
+        String pwd = properties.getProperty("password");
+        String driver = properties.getProperty("driver");
+        String url = properties.getProperty("url");
+
+        Class.forName(driver);
+        Connection connection = DriverManager.getConnection(url, user, pwd);
+    }
+}
+```
+
+#### ResultSet
+
+- 类似于迭代器，最初光标位于第一行之前
+- next方法将光标向下移动一行，如果没有更多行时返回false，因此使用while循环
+
+```java
+ResultSet resultSet = statement.executeQuery(sql);
+
+while (resultSet.next()) {
+    int anInt = resultSet.getInt(1);
+    String string = resultSet.getString(2);
+    System.out.printf("num " + anInt + " name " + string);
+    System.out.println();
+}
+
+resultSet.close();
+```
+
+#### Statement
+
+- statement对象用于执行静态sql语句并返回其生成的结果对象
+- 在连接建立后，需要对数据库进行访问，执行命令或是sql语句，可以通过
+  - Statement 存在sql注入问题
+  - PreparedStatement 预处理
+  - CallableStatement 存储过程
+- Statement对象执行sql语句存在sql注入风险
+- sql注入是利用某些系统没有对用户输入的数据进行充分的检查，而在用户输入数据中注入非法的sql语句段或命令，恶意攻击数据库
+- 要方法sql注入，只要用PreparedStatement取代Statement即可
+
+#### PreparedStatement
+
+- PreparedStatement执行的sql语句中的参数用问号(?)来表示, 调用PreparedStatement对象的SetXxx方法来设置这些参数. SetXxx第一个参数要设置sql语句中的参数的索引(从1开始), 第二个是设置sql语句中的参数值
+
+```java
+String sql = "select num, name from t1 where num=?";
+
+PreparedStatement statement = connection.prepareStatement(sql);
+statement.setString(1,"1");
+ResultSet resultSet = statement.executeQuery();
+// 添加
+sql = "insert into t1 values(?,?)";
+
+PreparedStatement statement = connection.prepareStatement(sql);
+statement.setString(1,"5");
+statement.setString(2,"mike");
+int rows = statement.executeUpdate();
+```
+
+#### 对JDBC封装
+
+```java
+public class JDBCUtils {
+    private static String user;
+    private static String pwd;
+    private static String url;
+    private static String driver;
+
+    static {
+        Properties properties = null;
+        try {
+            properties = new Properties();
+            properties.load(new FileInputStream("src\\...properties"));
+            user = properties.getProperty("user");
+            pwd = properties.getProperty("password");
+            url = properties.getProperty("url");
+            driver = properties.getProperty("driver");
+        } catch (IOException e) {
+            // 将编译异常转成运行异常
+            // 调用者可以选择捕获该异常, 也可以选择默认处理异常
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static Connection getConnection(){
+        try{
+            return DriverManager.getConnection(url,user,pwd);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static void close(ResultSet set, Statement statement, Connection connection){
+        try {
+            if(set != null){
+                set.close();
+            }
+            if(statement != null){
+                statement.close();
+            }
+            if(connection != null){
+                connection.close();
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+```
+
+#### JDBC 事务
+
+- 当connection创建时, 默认情况下自动提交事务, 不能回滚
+- 为让多个sql语句作为一个整体执行, 需要使用事务
+- 调用connection的setAutoCommit(false) 可以取消自动提交事务
+- connection的commit用来提交事务
+- connection的rollback用来回滚
+
+```java
+Connection connection = null;
+PreparedStatement ps = null;
+try {
+    connection = JDBCUtils.getConnection();
+    connection.setAutoCommit(false);	// 关闭自动提交
+    ps = connection.prepareStatement(sql1);
+    ps.executeUpdate();
+	// 可能有问题的代码
+    ps = connection.prepareStatement(spl2);
+    ps.executeUpdate();
+    connection.commit();
+} catch (SQLException e) {
+    e.printStackTrace();
+    try {
+        connection.rollback();		// 回滚
+    } catch (SQLException throwables) {
+        throwables.printStackTrace();
+    }
+} finally {
+    JDBCUtils.close(null, ps, connection);
+}
+```
+
+#### 批处理
+
+- 需要成批插入或者更新记录时, 可以采用批处理. 该机制允许多条语句一次性提交给数据库批量处理. 通常情况下比单独处理更加有效率
+- 批处理方法:
+  - addBatch: 添加需要批量处理的sql语句或参数
+  - executeBatch: 执行批量处理语句
+  - clearBatch: 清空批处理包的语句
+- 需要在url中添加`?rewriteBatchedStatements=true`
+- 和PreparedStatement搭配使用, 减少编译次数, 运行次数, 效率提高
+
+```java
+for (int i = 0; i < 5000; i++) {
+    ps.setString(1, "jack" + i);
+    ps.setString(2, "123");
+    ps.executeUpdate();
+
+    ps.addBatch();	// 添加
+    if ((i + 1) % 1000 == 0) {
+        ps.executeBatch();	// 执行
+        ps.clearBatch();	// 清空
+    }
+}
+```
+
+#### 数据库连接池
+
+- 传统JDBC每次向数据库建立连接时都要将Connection加载到内存中, 在验证IP地址, 用户名和密码(<1s) 需要数据库连接时,就要向数据库要求一个, 频繁进行数据库连接操作将占用很多系统资源, 导致服务器崩溃
+- 每次数据连接, 使用完后都要断开. 如果出现异常没有关闭, 将导致数据库的内存泄漏, 最终导致重启数据库
+- 传统获取链接的方式, 不能控制创建的连接数量. 如果连接过多, 也可能导致泄露和崩溃
+- 可以采用数据连接池技术来解决 connection pool
+
+1. 预先在缓冲池中放入一定数量的连接, 当需要建立数据库连接时, 从"缓冲池"中取出一个, 用完后再放回
+2. 连接池负责分配, 管理和释放数据库连接. 它允许应用程序重复使用一个现有的数据库连接, 而不是重新创建一个
+3. 当应用程序向连接池请求的连接数超过最大连接数量时, 将被加入到等待队列中
+
+![连接池工作原理](.\img\ConnectionPool.jpg)
+
+##### 连接池种类
+
+JDBC 数据库连接池使用javax.sql.DataSource来表示, DataSource只是一个接口, 该接口由第三方提供实现
+
+1. C3P0 速度相对较慢, 稳定性不错 (spring)
+2. DBCP 速度较快, 不稳定
+3. Proxxol 有监控连接池状态的功能, 稳定性较差
+4. BoneCP 速度快
+5. Druid 集成DBCP, C3P0, Proxool优点于一身的数据库连接池
+
+```java
+// c3p0
+// 将c3p0提供的 .xml 拷贝到src下面
+// 该文件指定了连接数据库和连接池的相关参数
+public void test2() throws Exception{
+    ComboPooledDataSource comboPooledDataSource = new ComboPooledDataSource("root");
+    for (int i = 0; i < 5000; i++) {
+        Connection connection = comboPooledDataSource.getConnection();
+        connection.close();
+    }
+}
+// druid
+// 加入druid jar包
+// 加入 配置文件
+// 创建Properties对象, 读取配置文件
+public void test1() throws Exception{
+    Properties properties = new Properties();
+    properties.load(new FileInputStream("src\\druid.properties"));
+    // 创建一个指定参数的数据库连接池, druid连接池
+    DataSource dataSource = DruidDataSourceFactory.createDataSource(properties);
+    for (int i = 0; i < 5000; i++) {
+        Connection connection = dataSource.getConnection();
+        connection.close();
+    }
+}
+```
+
+###### 对Druid工具封装
+
+```java
+public class JDBCUtilsByDruid {
+    private static DataSource ds;
+
+    static {
+        Properties properties = new Properties();
+        try {
+            properties.load(new FileInputStream("src\\druid.properties"));
+            ds = DruidDataSourceFactory.createDataSource(properties);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static Connection getConnection() throws SQLException {
+        return ds.getConnection();
+    }
+
+    // 关闭连接, 在数据库连接池中, close不是真的断开连接
+    // 而是把使用的Connection对象放回连接池
+    public static void close(ResultSet set, Statement statement, Connection connection) {
+        try {
+            if (set != null) {
+                set.close();
+            }
+            if (statement != null) {
+                statement.close();
+            }
+            if (connection != null) {
+                connection.close();
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+}
+```
+
+#### Apache - DBUtils
+
+- commons-dbutils 能极大简化jdbc编码的工作量
+
+1. QueryRunner类: 该类封装了sql的执行, 是线程安全的, 可以实现增删改查, 批处理
+2. ResultSetHandler接口: 该接口用于处理java.sql.ResultSet, 将数据按要求转换为另一种形式
+
+![Apache用处](.\img\ApacheUtils.jpg)
+
+```java
+Connection connection = JDBCUtilsByDruid.getConnection();
+// 使用DBUtils类和端口, 引入DBUtils jar包
+QueryRunner queryRunner = new QueryRunner();
+
+// query 方法就是执行sql语句, 得到resultset ---封装--> ArrayList中
+// 返回集合
+// connection: 连接
+// new BeanListHandler<>(Actor.class): 将resultset -> actor对象 -> 封装到arraylist
+// 底层使用反射机制, 去获取actor类的属性, 然后进行封装
+// 1: 给sql语句?赋值, 可以有多个值 因为是可变参数
+// 底层获得到的resultset会在query中关闭
+// 多行查询
+List<Actor> query = queryRunner.query(connection, "select name from t1 where num = ?", new BeanListHandler<>(Actor.class), 1);
+// 单行查询
+Actor query = queryRunner.query(connection, sql, new BeanHandler<>(Actor.class), 3);
+// 单行单列查询
+Object query = queryRunner.query(connection, sql, new ScalarHandler(), 3);
+// dml命令
+int i = queryRunner.update(connection, sql, "name1", 2);
+
+
+for (Actor actor :query) {
+    System.out.println(actor);
+}
+JDBCUtilsByDruid.close(null,null, connection);
+```
+
+#### BasicDao
+
+- DAO: data access object 数据访问对象
+- 专门和数据库交互, 即完成对数据库(表)的crud操作
+- 在BasicDao基础上, 实现一张表对应一个Dao, 更好的完成功能
+
+```java
+// 创建父级DAO, 子级DAO需要继承父级, 再实现增删改查
+public class BasicDao<T> {
+    private QueryRunner qr = new QueryRunner();
+
+    public int update(String sql, Object... param) {
+        Connection connection = null;
+        try {
+            connection = JDBCUtilsByDruid.getConnection();
+            int i = qr.update(connection, sql, param);
+            return i;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            JDBCUtilsByDruid.close(null, null, connection);
+        }
+    }
+
+    public List<T> queryMulti(String sql, Class<T> clazz, Object... param) {
+        Connection connection = null;
+        try {
+            connection = JDBCUtilsByDruid.getConnection();
+            return qr.query(connection, sql, new BeanListHandler<T>(clazz), param);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            JDBCUtilsByDruid.close(null, null, connection);
+        }
+    }
+
+    public T querySingle(String sql, Class<T> clazz, Object... param) {
+        Connection connection = null;
+        try {
+            connection = JDBCUtilsByDruid.getConnection();
+            return qr.query(connection, sql, new BeanHandler<T>(clazz), param);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            JDBCUtilsByDruid.close(null, null, connection);
+        }
+    }
+
+    public Object queryScalar(String sql, Object... param) {
+        Connection connection = null;
+        try {
+            connection = JDBCUtilsByDruid.getConnection();
+            return qr.query(connection, sql, new ScalarHandler(), param);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        } finally {
+            JDBCUtilsByDruid.close(null, null, connection);
+        }
+    }
+}
+```
+
+
+
+
+
+
+
+
+
 
 
 
