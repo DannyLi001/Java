@@ -541,3 +541,118 @@ public interface MyFun1 {
 MyFun1.show();
 ```
 ## 新时间日期API
+- LocalDate、LocalTime、LocalDateTime
+	- 这些的实例是不可变对象(像String) 
+```java
+// 1 LocalDate LocalTime LocalDateTime
+@Test
+public void test1() {
+	LocalDateTime ldt = LocalDateTime.now();
+
+	LocalDateTime ldt2 = LocalDateTime.of(2015, 10, 19, 13, 55, 25);
+
+	LocalDateTime ldt3 = ldt.plusYears(2);
+
+	LocalDateTime ldt4 = ldt.minusHours(5);
+
+	int year = ldt.getYear();
+	int dayOfMonth = ldt.getDayOfMonth();
+}
+```
+- Instant 时间戳
+```java
+// 2 Instant 时间戳 Unix元年: 1970.1.1T00:00:00到某时间之间的毫秒数
+@Test
+public void test2() {
+	Instant ins1 = Instant.now(); // 默认获取UTC时区
+	OffsetDateTime odt = ins1.atOffset(ZoneOffset.ofHours(8));
+
+	long epochMilli = ins1.toEpochMilli();
+}
+```
+- Duration、Period
+```java
+   /* 3
+	* Duration 计算两个“时间”之间间隔
+	* Period   计算两个“日期”之间的间隔
+	*/
+@Test
+public void test3(){
+	Instant now = Instant.now();
+	try {
+		Thread.sleep(1000);
+	} catch (Exception e) {
+	}
+	Instant now2 = Instant.now();
+	Duration between = Duration.between(now, now2);
+	System.out.println(between.toMillis());
+
+	LocalDate now3 = LocalDate.now();
+	LocalDate of = LocalDate.of(2024, 04, 01);
+	Period between2 = Period.between(now3, of);
+	System.out.println(between2.getDays());
+}
+```
+
+- 日期操纵
+	- TemporalAdjuster：时间矫正器（将日期调整到下个周日）
+	- TemporalAdjusters：该类通过静态方法提供了大量常用的TemporalAdjuster的实现
+```java
+// TemporalAdjuster：时间矫正器
+@Test
+public void test4(){
+	LocalDateTime now = LocalDateTime.now();
+	System.out.println(now);
+	
+	LocalDateTime withDayOfMonth = now.withDayOfMonth(10);
+	System.out.println(withDayOfMonth);
+
+	LocalDateTime ldt  = now.with(TemporalAdjusters.next(DayOfWeek.FRIDAY));
+	System.out.println(ldt);
+
+	// 自定义
+	LocalDateTime ldt4 = now.with((l) -> {
+		LocalDateTime ldt3 = (LocalDateTime) l;
+		DayOfWeek dow = ldt3.getDayOfWeek();
+		if(dow.equals(DayOfWeek.FRIDAY)){
+			return ldt3.plusDays(3);
+		} else if(dow.equals(DayOfWeek.SATURDAY)){
+			return ldt3.plusDays(2);
+		} else {
+			return ldt3.plusDays(1);
+		}
+	});
+}
+```
+- DateTimeFormatter 
+```java
+// DateTimeFormatter: 格式化时间/日期
+@Test
+public void test5(){
+	DateTimeFormatter dtf  = DateTimeFormatter.ISO_DATE;
+	LocalDateTime ldt  = LocalDateTime.now();
+
+	String strDate  = ldt.format(dtf);
+
+	DateTimeFormatter dtf2  = DateTimeFormatter.ofPattern("dd-MM-yyyy,ss:mm:HH");
+	String strDate2  = dtf2.format(ldt);
+
+	LocalDateTime ldt3  = LocalDateTime.parse(strDate2,dtf2);
+}
+```
+- 时区处理 `ZonedDate、ZonedTime、ZonedDateTime`
+```java
+// ZonedDate、ZonedTime、ZonedDateTime
+@Test
+public void test6(){
+	Set<String> set  = ZoneId.getAvailableZoneIds();
+	LocalDateTime ldt  = LocalDateTime.now(ZoneId.of("Europe/Tallinn"));
+	System.out.println(ldt);
+	LocalDateTime ldt1  = LocalDateTime.now();
+	ZonedDateTime zdt  = ldt1.atZone(ZoneId.of("Asia/Shanghai"));
+	System.out.println(zdt);
+}
+```
+
+## 可重复注解与类型注解
+![可重复注解与类型注解](img\Annotation.png)
