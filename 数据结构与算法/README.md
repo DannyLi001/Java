@@ -202,3 +202,112 @@ class CircleArray {
 
 }
 ```
+
+## 链表
+- 链表是有序的列表
+- 链表是以节点的方式来存储
+- 每个节点包含data域，next域
+- 链表的各个节点**不一定是连续存储**
+- 链表分**带头结点的链表**和**没有头节点的链表**
+### 单链表
+- head节点：
+    - 不存放具体的数据
+    - 作用是表示单链表头
+- 添加
+    1. 先创建一个head头节点，作用是表示单链表的头
+    2. 后面每添加一个节点，就直接加到链表的最后
+- 插入
+    1. 先找到新添加节点的位置，通过辅助指针
+    2. 新节点next = temp.next
+    3. 将temp.next = 新节点 
+- 删除
+    1. 找到需要删除的节点的前一个节点
+    2. temp.next = temp.next.next
+    3. 被删除的节点将不会有其他引用指向，会被垃圾回收机制回收
+```java
+class SingleLinkedList {
+    // 初始化头节点
+    private HeroNode head = new HeroNode(0, null, null);
+
+    // 添加节点
+    // 当不考虑编号顺序，将最后节点的next指向新节点
+    public void add(HeroNode heroNode) {
+        // 因为head不能动，我们需要一个辅助遍历temp
+        HeroNode temp = head;
+        while (temp.next != null) {
+            temp = temp.next;
+        }
+        temp.next = heroNode;
+    }
+    
+    public void addByOrder(HeroNode heroNode){
+        // temp找到位于添加位置的前一个节点
+        HeroNode temp = head;
+        while (temp.next != null) {
+            if(temp.next.no > heroNode.no){
+                break;
+            } else if(temp.next.no == heroNode.no){
+                System.out.println("isExist");
+                return;
+            }
+            temp = temp.next;
+        }
+        heroNode.next = temp.next;
+        temp.next = heroNode;
+        return;
+    }
+
+    public void update(HeroNode heroNode){
+        if(head.next == null){
+            System.out.println("isEmpty");
+            return;
+        }
+        HeroNode temp = head;
+        while(temp != null){
+            if(temp.no == heroNode.no){
+                temp.name = heroNode.name;
+                temp.nickName = heroNode.nickName;
+                return;
+            }
+            temp = temp.next;
+        }
+        System.out.println("noFound");
+    }
+
+    public void delete(int no){
+        HeroNode temp = head;
+        while(temp.next != null){
+            if(temp.next.no == no){
+                temp.next = temp.next.next;
+                return;
+            }
+            temp = temp.next;
+        }
+        System.out.println("noFound");
+    }
+
+    public void show() {
+        if (head.next == null) {
+            System.out.println("isEmpty");
+            return;
+        }
+        HeroNode temp = head;
+        while (temp.next != null) {
+            temp = temp.next;
+            System.out.println(temp);
+        }
+        return;
+    }
+}
+class HeroNode {
+    public int no;
+    public String name;
+    public String nickName;
+    public HeroNode next;
+    public HeroNode(int no, String name, String nickName) {
+        this.no = no;
+        this.name = name;
+        this.nickName = nickName;
+    }
+}
+```

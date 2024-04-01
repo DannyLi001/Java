@@ -108,5 +108,4 @@ class CircleArray {
         }
         return arr[front];
     }
-
 }
