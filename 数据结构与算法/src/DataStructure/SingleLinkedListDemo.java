@@ -1,5 +1,8 @@
 package DataStructure;
 
+import java.util.HexFormat;
+import java.util.Stack;
+
 public class SingleLinkedListDemo {
     public static void main(String[] args) {
         SingleLinkedList sll = new SingleLinkedList();
@@ -15,6 +18,20 @@ public class SingleLinkedListDemo {
         sll.update(h4_1);
         sll.delete(1);
         sll.show();
+
+        int length = SingleLinkedList.getLength(sll.getHead());
+        System.out.println(length);
+
+        HeroNode node = SingleLinkedList.findLastIndexNode(sll.getHead(), 4);
+        System.out.println(node);
+
+        SingleLinkedList.reverseList(sll.getHead());
+        sll.show();
+
+        System.out.println("-----------------------------");
+
+        SingleLinkedList.reversePrint(sll.getHead());
+        
     }
 }
 
@@ -81,6 +98,69 @@ class SingleLinkedList {
         System.out.println("noFound");
     }
 
+    public static int getLength(HeroNode head){
+        if(head.next == null){
+            return 0;
+        }
+        int count = 0;
+        HeroNode temp = head;
+        while(temp.next != null){
+            temp = temp.next;
+            count++;
+        }
+        return count;
+    }
+
+    public static HeroNode findLastIndexNode(HeroNode head, int index){
+        if (head.next == null){
+            return null;
+        }
+
+        int size = getLength(head);
+        if(index <= 0 || index > size){
+            return null;
+        }
+
+        HeroNode temp = head.next;
+        for (int i = 0; i < size - index; i++) {
+            temp = temp.next;
+        }
+        return temp;
+    }
+
+    // 单链表反转
+    public static void reverseList(HeroNode head){
+        if (head.next == null || head.next.next == null){
+            return;
+        }
+
+        HeroNode temp = head.next;
+        HeroNode next = null;
+        HeroNode reverseHead = new HeroNode(0, null, null);
+        while (temp != null) {
+            next = temp.next;
+            temp.next = reverseHead.next;
+            reverseHead.next = temp;
+            temp = next;
+        }
+        head.next = reverseHead.next;
+    }
+
+    public static void reversePrint(HeroNode head){
+        if (head.next == null){
+            return;
+        }
+        Stack<HeroNode> stack = new Stack<>();
+        HeroNode temp = head;
+        while(temp.next != null){
+            temp = temp.next;
+            stack.push(temp);
+        }
+        while (!stack.empty()) {
+            System.out.println(stack.pop());
+        }
+    }
+
     public void show() {
         if (head.next == null) {
             System.out.println("isEmpty");
@@ -94,6 +174,11 @@ class SingleLinkedList {
         }
         return;
     }
+
+    public HeroNode getHead() {
+        return head;
+    }
+
 }
 
 class HeroNode {
