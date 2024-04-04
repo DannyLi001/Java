@@ -513,5 +513,297 @@ class HeroNode {
     }
 }
 ```
+### 双向链表
+- 双向链表可以向前或向后查找
+- 双向链表可以自我删除
+- 遍历、添加、修改、删除
+```java
+class DoubleLinkedList{
+    private HeroNode2 head = new HeroNode2(0, null, null);
+    public HeroNode2 getHead() {
+        return head;
+    }
+```
+- 添加（默认添加到链表最后）
+    - 先找到链表最后一个节点
+    - temp.next = new HeroNode
+    - new HeroNode.pre = temp
+```java
+    public void add(HeroNode2 heroNode) {
+        // 因为head不能动，我们需要一个辅助遍历temp
+        HeroNode2 temp = head;
+        while (temp.next != null) {
+            temp = temp.next;
+        }
+        temp.next = heroNode;
+        heroNode.pre = temp;
+    }
 
+    //插入
+    public void addByOrder(HeroNode2 heroNode){ 
+        // temp找到位于添加位置的前一个节点
+        HeroNode2 temp = head;
 
+        while (temp.next != null) {
+            if(temp.next.no > heroNode.no){
+                break;
+            } else if(temp.next.no == heroNode.no){
+                System.out.println("isExist");
+                return;
+            }
+            temp = temp.next;
+        }
+        if (temp.next != null){
+            temp.next.pre = heroNode;
+        }
+        heroNode.next = temp.next;
+        heroNode.pre = temp;
+        temp.next = heroNode;
+        return;
+    }
+```
+- 修改
+    - 和单链表一样
+```java
+    public void update(HeroNode2 heroNode){
+        if(head.next == null){
+            System.out.println("isEmpty");
+            return;
+        }
+        HeroNode2 temp = head;
+        while(temp != null){
+            if(temp.no == heroNode.no){
+                temp.name = heroNode.name;
+                temp.nickName = heroNode.nickName;
+                return;
+            }
+            temp = temp.next;
+        }
+        System.out.println("noFound");
+    }
+```
+- 删除（可以实现自我删除某个节点）
+    - 找到要删除的节点
+    - temp.pre.next = temp.next
+    - temp.next.pre = temp.pre  
+
+```java
+    public void delete(int no){
+        if (head.next == null){
+            System.out.println("isEmpty");
+            return;
+        }
+
+        HeroNode2 temp = head.next;
+        while(temp != null){
+            if(temp.no == no){
+                if(temp.next != null){
+                    temp.next.pre = temp.pre;
+                }
+                temp.pre.next = temp.next;
+                return;
+            }
+            temp = temp.next;
+        }
+        System.out.println("noFound");
+    }
+```
+- 遍历方法和单链表一样，但是可以向前也可以向后
+```java
+    public void show() {
+        if (head.next == null) {
+            System.out.println("isEmpty");
+            return;
+        }
+
+        HeroNode2 temp = head;
+        while (temp.next != null) {
+            temp = temp.next;
+            System.out.println(temp);
+        }
+        return;
+    }
+    
+}
+```
+- 节点类
+```java
+class HeroNode2 {
+    public int no;
+    public String name;
+    public String nickName;
+    public HeroNode2 next;
+    public HeroNode2 pre;
+
+    public HeroNode2(int no, String name, String nickName) {
+        this.no = no;
+        this.name = name;
+        this.nickName = nickName;
+    }
+}
+```
+### 单向环形链表 
+---
+约瑟夫问题
+- 设编号为1，2，...n的d个人围坐一圈，约定编号为k的人从1开始报数，数到m的那个人出列，他的下一位又从1开始报数，如此反复，直到所有人出列。由此产生一个出队编号的序列
+
+---
+构建单向链表：
+- 创建第一个节点，让first指向该节点，并形成环形
+- 每创建一个新节点，就把节点加入到已有的环形链表中
+
+```java
+class CircleSingleLinkedList {
+    private Boy first = new Boy();
+```
+添加
+- 第一个节点需要特别创建
+- 添加后面节点时，需要两个指针，一个指向最开始的节点，一个指向新创建的节点
+```java
+    public void addBoy(int nums) {
+        if (nums < 1) {
+            return;
+        }
+        Boy curBoy = null;
+        for (int i = 1; i <= nums; i++) {
+            Boy boy = new Boy(i);
+            if (i == 1) {
+                first = boy;
+                first.setNext(first);
+                curBoy = first;
+            } else {
+                curBoy.setNext(boy);
+                boy.setNext(first);
+                curBoy = boy;
+            }
+
+        }
+    }
+```
+约瑟夫问题solution
+- 需要两个指针，一个指向报数报到的小孩，一个指向该小孩后面的节点
+- 先将需要取出的节点进行操作，然后将指向该节点的指针向前进一位
+- 将后面的指针指向前进一位的节点即可去除操作完的节点
+```java
+    /**
+     * 
+     * @param startNo  从第几个小孩开始数数
+     * @param countNum 数几下
+     * @param nums     最初有多少小孩在圈中
+     */
+    public void countBoy(int startNo, int countNum, int nums) {
+        if (first == null || startNo < 1 || startNo > nums) {
+            System.out.println("wrongParam");
+        }
+
+        // 创建一个helper指针，指向first后面
+        Boy helper = first;
+        while (true) {
+            if (helper.getNext() == first) {
+                break;
+            }
+            helper = helper.getNext();
+        }
+
+        // 从第startNo个小孩开始
+        for (int i = 0; i < startNo - 1; i++) {
+            first = first.getNext();
+            helper = helper.getNext();
+        }
+        // 开始报数
+        while (true) {
+            if (helper == first){
+                break;
+            }
+            for (int i = 0; i < countNum - 1; i++) {
+                first = first.getNext();
+                helper = helper.getNext();
+            }
+            System.out.println(first.getNo());
+            first = first.getNext();
+            helper.setNext(first);
+        }
+        System.out.println(first.getNo());
+    }
+```
+遍历：
+- 创建一个辅助指针，指向first节点
+- 通过while循环遍历环形链表 curBoy.next == first
+
+```java
+    public void showBoy() {
+        if (first == null) {
+            return;
+        }
+
+        Boy curBoy = first;
+        while (true) {
+            System.out.println(curBoy.getNo());
+            if (curBoy.getNext() == first) {
+                break;
+            }
+            curBoy = curBoy.getNext();
+        }
+    }
+}
+// 节点类
+class Boy {
+    private int no;
+    private Boy next;
+}
+```
+
+## 栈 stack
+- 先进后出的有序列表
+- 栈是限制线性表中元素的插入和删除只能在线性表的同一端进行的一种特殊线性表。允许插入和删除的一端称为栈顶，另一端称为栈底。
+
+### 数组模拟栈
+- 定义top表示栈顶，初始为-1
+- 入栈：stack[top++] = data;
+- 出栈：return stack[top--];
+```java
+class ArrayStack {
+    private int maxSize;
+    private int[] stack;
+    private int top = -1;
+    public ArrayStack(int maxSize) {
+        this.maxSize = maxSize;
+        stack = new int[maxSize];
+    }
+    public boolean isFull() {
+        return top == maxSize - 1;
+    }
+    public boolean isEmpty() {
+        return top == -1;
+    }
+
+    // 添加
+    public void push(int value) {
+        if (isFull()) {
+            System.out.println("isFull");
+            return;
+        }
+        top++;
+        stack[top] = value;
+    }
+
+    // 获取
+    public int pop() {
+        if (isEmpty()) {
+            throw new RuntimeException("isEmpty");
+        }
+        return stack[top--];
+    }
+
+    // 遍历
+    public void show() {
+        if (isEmpty()) {
+            System.out.println("isEmpty");
+            return;
+        }
+        for (int i = top; i >= 0; i--) {
+            System.out.println(stack[i]);
+        }
+    }
+}
+```
