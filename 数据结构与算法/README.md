@@ -807,3 +807,371 @@ class ArrayStack {
     }
 }
 ```
+### 使用栈实现计算器 (中缀表达式)
+- 准备两个栈：数字栈，符号栈
+- 通过所以来遍历数学公式
+- 如果是数字，直接如数字栈
+- 如果是符号
+    - 如果符号栈为空，入符号栈
+    - 如果符号栈有符号，对当前符号和栈顶符号的优先级进行比较
+        - 如果当前符号优先级小于或等于栈顶符号，从数字栈中取出两个数字，符号栈中取出一个符号进行运算，将得到的结果放入数字栈，然后将当前符号加入到符号栈。
+        - 如果当前符号优先级大于栈顶符号，入符号栈
+- 数学公式扫描完毕，按顺序从数字栈和符号栈中pop出对应的数和符号并运行
+- 最后数字栈中只有一个数字，就是公式结果
+
+```java
+public static void main(String[] args) {
+    String exp = "31+2*60-2";
+    ArrayStack2 numbers = new ArrayStack2(10);
+    ArrayStack2 operators = new ArrayStack2(10);
+
+    int index = 0;
+    int num1 = 0;
+    int num2 = 0;
+    int oper = 0;
+    int res = 0;
+    char ch = ' ';
+    String keepNum = "";
+
+    while (true) {
+        ch = exp.substring(index, index + 1).charAt(0);
+        if (operators.isOper(ch)) {
+            if (operators.isEmpty()) {
+                operators.push(ch);
+            } else {
+                if (operators.priority(ch) <= operators.priority(operators.peek())) {
+                    num1 = numbers.pop();
+                    num2 = numbers.pop();
+                    oper = operators.pop();
+
+                    res = numbers.cal(num1, num2, oper);
+                    numbers.push(res);
+                    operators.push(ch);
+                } else {
+                    operators.push(ch);
+                }
+            }
+        } else {
+            keepNum += ch;
+            if (index == exp.length() - 1) {
+                numbers.push(Integer.parseInt(keepNum));
+            } else {
+                if (operators.isOper(exp.substring(index + 1, index + 2).charAt(0))) {
+                    numbers.push(Integer.parseInt(keepNum));
+                    keepNum = "";
+                }
+            }
+        }
+        index++;
+        if (index >= exp.length()) {
+            break;
+        }
+    }
+    while (true) {
+        if (operators.isEmpty()) {
+            break;
+        }
+        num1 = numbers.pop();
+        num2 = numbers.pop();
+        oper = operators.pop();
+
+        res = numbers.cal(num1, num2, oper);
+        numbers.push(res);
+    }
+    System.out.println(numbers.pop());
+}
+
+
+class ArrayStack2 {
+    private int maxSize;
+    private int[] stack;
+    private int top = -1;
+
+    public ArrayStack2(int maxSize) {
+        this.maxSize = maxSize;
+        stack = new int[maxSize];
+    }
+
+    public boolean isFull() {
+        return top == maxSize - 1;
+    }
+
+    public boolean isEmpty() {
+        return top == -1;
+    }
+
+    public void push(int value) {
+        if (isFull()) {
+            System.out.println("isFull");
+            return;
+        }
+        top++;
+        stack[top] = value;
+    }
+
+    public int pop() {
+        if (isEmpty()) {
+            throw new RuntimeException("isEmpty");
+        }
+        return stack[top--];
+    }
+
+    public int peek() {
+        return stack[top];
+    }
+
+    public void show() {
+        if (isEmpty()) {
+            System.out.println("isEmpty");
+            return;
+        }
+        for (int i = top; i >= 0; i--) {
+            System.out.println(stack[i]);
+        }
+    }
+
+    public int priority(int oper) {
+        if (oper == '*' || oper == '/') {
+            return 1;
+        } else if (oper == '+' || oper == '-') {
+            return 0;
+        } else {
+            return -1;
+        }
+    }
+
+    public boolean isOper(char val) {
+        return val == '+' || val == '-' || val == '*' || val == '/';
+    }
+
+    public int cal(int num1, int num2, int oper) {
+        int res = 0;
+        switch (oper) {
+            case '+':
+                res = num1 + num2;
+                break;
+            case '-':
+                res = num2 - num1;
+                break;
+            case '*':
+                res = num1 * num2;
+                break;
+            case '/':
+                res = num2 / num1;
+                break;
+            default:
+                break;
+        }
+        return res;
+    }
+}
+```
+
+## 前缀、中缀、后缀表达式
+### 前缀
+- 从右至左扫描表达式，遇到数字时，将数字压入堆栈，遇到运算符时，弹出栈顶的两个数。用运算符对它们做相应的计算，并将结果入栈；重复上述过程直到表达式最左端，最后运算得出的值即为结果
+    - (3+4)*5-6 前缀表达式为 - * + 3 4 5 6
+### 中缀
+- 中缀表达式是常见的运算表达式 (3+4)*4-6
+- 计算机不好操作
+### 后缀
+- 逆波兰表达式
+- 从左至右扫描表达式，遇到数字时，将数字压入堆栈，遇到运算符时，弹出栈顶的两个数。用运算符对它们做相应的计算，并将结果入栈；重复上述过程直到表达式最右端，最后运算得出的值即为结果
+    - (3+4)*5-6 前缀表达式为 3 4 + 5 * 6 -
+    - 4*5-8+60+8/2 -> 4 5 * 8 - 60 + 8 2 / +
+
+### 逆波兰计算器
+```java
+public static void main(String[] args) {
+    String suffixExpression = "3 4 + 5 * 6 -";
+    List<String> rpnList = getListString(suffixExpression);
+    int res = calculate(rpnList);
+    System.out.println(res);
+}
+
+public static List<String> getListString(String suffixExpression) {
+    String[] split = suffixExpression.split(" ");
+    ArrayList<String> list = new ArrayList<>();
+    for (String ele : split) {
+        list.add(ele);
+    }
+    return list;
+}
+
+public static int calculate(List<String> ls) {
+    Stack<String> stack = new Stack<>();
+    for (String item : ls) {
+        if (item.matches("\\d+")) {
+            stack.push(item);
+        } else {
+            int num2 = Integer.parseInt(stack.pop());
+            int num1 = Integer.parseInt(stack.pop());
+            int res = 0;
+            if (item.equals("+")) {
+                res = num1 + num2;
+            } else if (item.equals("-")) {
+                res = num1 - num2;
+            } else if (item.equals("*")) {
+                res = num1 * num2;
+            } else if (item.equals("/")) {
+                res = num1 / num2;
+            } else {
+                throw new RuntimeException();
+            }
+            stack.push(res + "");
+        }
+    }
+    return Integer.parseInt(stack.pop());
+}
+```
+
+### 中缀转后缀表达式
+1. 初始化了两个栈，运算符栈s1和储存中间结 果栈s2
+2. 从左至右扫描中缀表达式
+3. 遇到操作数时，压入s2
+4. 遇到运算符时，比较其与s1栈顶运算符的优先级：
+    1. 如果s1为空，或栈顶运算符为左括号 "(" 则直接将此运算符入栈
+    2. 如果优先级比栈顶运算符的高，将运算符压入s1
+    3. 否则，将s1栈顶的运算符弹出并压入到s2中，再次转到4.1与s1中新的栈顶运算符相比较
+5. 遇到括号
+    1. 如果是左括号 "(" 直接压入s1
+    2. 如果是右括号 ")" 则依次弹出s1栈顶的运算符，并压入s2，直到遇到左括号为止，此时将这一对括号丢弃
+6. 重复步骤2至5，直到表达式的最右边
+7. 将s1中剩余的运算符依次弹出并压入s2
+8. 依次弹出s2中的元素并输出，结果的逆序即为中缀表达式对应的后缀表达式
+```java
+public static List<String> parseSuffixExpressionList(List<String> ls) {
+    Stack<String> s1 = new Stack<>();
+    // s2没有pop操作，后续还需要逆序操作，使用ArrayList
+    ArrayList<String> s2 = new ArrayList<>();
+
+    for (String item  : ls) {
+        if(item.matches("\\d+")){
+            s2.add(item);
+        } else if (item.equals("(")){
+            s1.push(item);
+        } else if(item.equals(")")){
+            while (!s1.peek().equals("(")){
+                s2.add(s1.pop());
+            }
+            s1.pop();
+        } else {
+            while(s1.size() != 0 && Operation.getValue(s1.peek()) >= Operation.getValue(item)) {
+                s2.add(s1.pop());
+            }
+            s1.push(item);
+        }
+    }
+    while (s1.size() != 0) {
+        s2.add(s1.pop());
+    }
+    return s2;
+}
+```
+
+## 递归
+- 当程序执行到一个方法时，会开辟一个独立的空间（栈）
+- 每个空间的数据是独立的
+- 递归必须向退出递归的条件逼近，否则StackOverflowEffor
+- 当方法执行完毕或遇到return就会返回，遵守谁调用，就将返回值给谁。
+### 迷宫问题
+```java
+/* 
+ * 从地图（1，1）出发
+ * 如果到达（6，5）说明找到通路
+ * 约定：0表示没有走过，1表示墙，2表示可以走，3表示已经走过，但是不通
+ * 策略：下->右->上->左，如果不通，回溯
+ */
+/**
+ * 
+ * @param map 地图
+ * @param i   从哪个位置开始找
+ * @param j
+ * @return 如果找到返回true 否则false
+ */
+public static boolean setWay(int[][] map, int i, int j) {
+    if (map[6][5] == 2) {
+        return true;
+    } else {
+        if(map[i][j] == 0) {
+            map[i][j] = 2;
+            if (setWay(map, i+1, j)) {
+                return true;
+            } else if (setWay(map, i, j + 1)){
+                return true;
+            } else if (setWay(map, i - 1, j)){
+                return true;
+            } else if (setWay(map, i, j - 1)){
+                return true;
+            } else {
+                map[i][j] = 3;
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+}
+```
+### 八皇后问题
+```java
+int max = 8;
+int[] array = new int[max];
+
+public static void main(String[] args) {    
+    Queen queen = new Queen();
+    queen.check(0);
+}
+
+private void check(int n) {
+    if (n == max) {
+        print();
+        return;
+    }
+    for (int i = 0; i < max; i++) {
+        array[n] = i;
+
+        if(judge(n)) {
+            check(n + 1);
+        }
+    }
+}
+
+private boolean judge(int n){
+    for (int i = 0; i < n; i++) {
+        // array[i] == array[n] 检查是否在同一列
+        // Math.abs(n - i) == Math.abs(array[n] - array[i]) 检查是否在同一斜线
+        if(array[i] == array[n] || Math.abs(n - i) == Math.abs(array[n] - array[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
+private void print(){
+    for (int i = 0; i < array.length; i++) {
+        System.out.print(array[i]);
+    }
+    System.out.println();
+}
+```
+
+## 排序
+内部排序  
+- 指将需要处理的所有数据都加载到内部储存器中进行排序  
+
+    - 插入排序
+        - 直接插入排序
+        - 希尔排序
+    - 选择排序
+        - 简单选择排序
+        - 堆排序
+    - 交换排序
+        - 冒泡排序
+        - 快速排序
+    - 归并排序
+    - 基数排序  
+
+外部排序
+- 数据量过大，无法全部加载到内存中，需要借助外部储存进行排序
+
