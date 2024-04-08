@@ -1175,3 +1175,131 @@ private void print(){
 外部排序
 - 数据量过大，无法全部加载到内存中，需要借助外部储存进行排序
 
+### 冒泡排序
+- 一共进行数组大小 -1 次大循环
+- 每一趟排序的次数在逐渐减少
+- 如果发现在某趟排序中没有发生一次交换，可以提前结束排序（优化）
+![bubblesort](img\bubblesort.gif)
+```java
+public static void bubbleSort(int[] arr){
+    // 时间复杂度O(n^2)
+    int temp = 0;
+    boolean flag = false; // 标识变量，表示是否进行过交换
+    // i - 1 不需要循环所有元素
+    for (int i = 0; i < arr.length - 1; i++) {
+        // j - 1 确保不超出边界
+        for (int j = 0; j < arr.length - i - 1; j++) {
+            if (arr[j] > arr[j + 1]) {
+                temp = arr[j];
+                arr[j] = arr[j + 1];
+                arr[j + 1] = temp;
+                flag = true;
+            }
+        }
+        if (!flag) {
+            break;
+        } else {
+            flag = false;
+        }
+    }
+}
+```
+
+### 选择排序
+- 选择排序一共有数组大小-1 轮排序
+- 每一轮排序，又是一个循环，循环的规则
+    - 先假定当前这个数是最小数
+    - 然后和后面的每个数进行比较，如果发现有比当前数更小的数就重新确定最小数，并得到下表
+    - 当遍历到数组最后时，就得到本轮最小数和下标
+    - 交换
+![selectsort](img\selectsort.gif)
+```java
+public static void selectSort(int[] arr) {
+    for (int i = 0; i < arr.length - 1; i++) {
+        int minIndex = i;
+        int min = arr[i];
+        // 找最小数
+        for (int j = i + 1; j < arr.length; j++) {
+            if (min > arr[j]) {
+                minIndex = j;
+                min = arr[j];
+            }
+        }
+        // 交换
+        if (minIndex != i) {
+            arr[minIndex] = arr[i];
+            arr[i] = min;
+        }
+    }
+}
+```
+
+### 插入排序
+- 开始时有序表中只包含一个元素，无序表中包含n-1个元素
+- 排序过程中每次从无序表中取出第一个元素，把它的值与有序表元素的值进行比较，将它插入到有序表中适当的位置，成为新的有序表
+![insertionSort](img\insertionSort.gif)
+```java
+public static void insertSort(int[] arr) {
+    int insertVal = 0;
+    int insertIndex = 0;
+    // i之前都为有序，之后为需要整理的部分
+    for (int i = 1; i < arr.length; i++) {
+        insertVal = arr[i];
+        insertIndex = i - 1;
+
+        while(insertIndex >= 0 && insertVal < arr[insertIndex]){
+            arr[insertIndex + 1] = arr[insertIndex];
+            insertIndex--;
+        }
+        arr[insertIndex + 1] = insertVal;
+    }
+}   
+```
+
+#### 希尔排序（插入排序优化）
+按下表进行一定增量分组，对每组使用直接插入排序算法排序，随着增量减少，每组包含的元素越来越多，当增量减至1，给整个队列分为一组并进行插入排序
+![shellsort](img\shellsort.gif)
+- 交换法
+```java
+public static void shellSort(int[] arr) {
+    int temp = 0;
+    
+    for (int gap = arr.length / 2; gap > 0; gap/=2) {
+        // 分组
+        for (int i = gap; i < arr.length; i++) {
+            // 遍历各组中的元素
+            for (int j = i - gap; j >= 0; j -= gap) {
+                // 交换
+                if (arr[j] > arr[j + gap]){
+                    temp = arr[j];
+                    arr[j] = arr[j + gap];
+                    arr[j + gap] = temp;
+                }
+            }
+        }
+    }
+}
+```
+- 移位法
+```java
+public static void shellSort2(int[] arr) {
+    for (int gap = arr.length / 2; gap > 0; gap /= 2) {
+        for (int i = gap; i < arr.length; i++) {
+            int j = i;
+            int temp = arr[j];
+            if (arr[j] < arr[j - gap]) {
+                // 移位
+                while (j - gap >= 0 && temp < arr[j - gap]) {
+                    arr[j] = arr[j - gap];
+                    j -= gap;
+                }
+                arr[j] = temp;
+            }
+        }
+    }
+}
+```
+
+### 快速排序
+- 
+![quicksort](img\quicksort.gif)
