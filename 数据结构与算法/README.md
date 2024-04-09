@@ -1301,5 +1301,156 @@ public static void shellSort2(int[] arr) {
 ```
 
 ### 快速排序
-- 
+- 通过一趟排序将要排序的数据分割成独立的两部分，一部分的数据比另一部分的数据都要小，然后再按照此方法对两部分数据进行快速排序，整个排序过程可以递归进行
 ![quicksort](img\quicksort.gif)
+```java
+public static void quickSort(int[] arr, int left, int right) {
+    int l = left;
+    int r = right;
+    int pivot = arr[(left + right) / 2];
+
+    int temp = 0;
+    while (l < r) {
+        // 找到左边大于pivot
+        while (arr[l] < pivot) {
+            l++;
+        }
+        // 找到右边小于pivot
+        while (arr[r] > pivot) {
+            r--;
+        }
+        // 左边小于pivot，右边大于pivot
+        if (l >= r) {
+            break;
+        }
+        temp = arr[l];
+        arr[l] = arr[r];
+        arr[r] = temp;
+
+        if (arr[l] == pivot) {
+            r--;
+        }
+        if (arr[r] == pivot) {
+            l++;
+        }
+    }
+
+    if (l == r) {
+        l++;
+        r--;
+    }
+    if (left < r) {
+        quickSort(arr, left, r);
+    }
+    if (right > l) {
+        quickSort(arr, l, right);
+    }
+}
+```
+
+### 归并排序
+- 采用分治策略
+    - **分**成一些小的问题，然后递归求解
+    - **治**是将分的阶段得到的各答案“修补”在一起
+![mergesort](img\mergesort.gif)
+```java
+public static void mergeSort(int[] arr, int left, int right, int[] temp){
+    if(left < right){
+        int mid = (left + right) / 2;
+        mergeSort(arr, left, mid, temp);
+        mergeSort(arr, mid + 1, right, temp);
+        merge(arr, left, mid, right, temp);
+    }
+}
+
+/**
+    * 
+    * @param arr   排序的原始数组
+    * @param left  左边有序序列的初始索引
+    * @param mid   中间索引
+    * @param right 右边索引
+    * @param temp  做中转的数组
+    */
+public static void merge(int[] arr, int left, int mid, int right, int[] temp) {
+    int i = left;
+    int j = mid + 1;
+    int t = 0;
+
+    // 先把左右两边的数据按照规则填充到temp数组
+    // 直到左右两边的有序序列，有一边处理完毕为止
+    while (i <= mid && j <= right) {
+        if (arr[i] <= arr[j]) {
+            temp[t] = arr[i];
+            t++;
+            i++;
+        } else {
+            temp[t] = arr[j];
+            j++;
+            t++;
+        }
+    }
+    // 把有剩余数据的一边，依次全部填充到temp
+    while (i <= mid) {
+        temp[t] = arr[i];
+        t++;
+        i++;
+    }
+    while (j <= right) {
+        temp[t] = arr[j];
+        t++;
+        j++;
+    }
+
+    t = 0;
+    int tempLeft = left;
+    while (tempLeft <= right) {
+        arr[tempLeft] = temp[t];
+        tempLeft++;
+        t++;
+    }
+}
+```
+### 基数排序（桶排序）
+- 将所有带比较数值统一为同样的数位长度，数位较短的数前补零。从最低为开始，一次进行依次排序。这样从最低位排序一直到最高位排序完成后，数列就变成一个有序序列。
+- 空间换时间，内存占用大
+![radixsort](img\radixsort.gif)
+```java
+public static void radixSort(int[] arr) {
+    // 数组中最大的位数
+    int max = arr[0];
+    for (int i = 0; i < arr.length; i++) {
+        if (arr[i] > max) {
+            max = arr[i];
+        }
+    }
+    int maxLength = (max + "").length();
+    // 定义一个二维数组，表示10个桶
+    // 为了防止溢出，每个一维数组大小为arr.length
+    int[][] bucket = new int[10][arr.length];
+
+    // 用来记录每个桶的数据数量
+    int[] bucketElementCounts = new int[10];
+
+    for (int i = 0, n = 1; i < maxLength; i++, n *= 10) {
+        // 入桶
+        for (int j = 0; j < arr.length; j++) {
+            int digitOfElement = arr[j] / n % 10;
+            bucket[digitOfElement][bucketElementCounts[digitOfElement]++] = arr[j];
+        }
+
+        // 出桶
+        int index = 0;
+        for (int k = 0; k < bucket.length; k++) {
+            if (bucketElementCounts[k] != 0) {
+                for (int l = 0; l < bucketElementCounts[k]; l++) {
+                    arr[index++] = bucket[k][l];
+                }
+            }
+            // 清桶
+            bucketElementCounts[k] = 0;
+        }
+    }
+}
+```
+### 常用排序算法对比
+![allsorts](img\allsorts.png)

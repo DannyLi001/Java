@@ -1,8 +1,12 @@
 package DataStructure;
 
+import java.util.Arrays;
+
 public class QuickSort {
     public static void main(String[] args) {
-
+        int[] arr = { 1, 4, 8, 0, 4, 6, 4, 7, 3, 8 };
+        quickSort(arr, 0, arr.length - 1);
+        System.out.println(Arrays.toString(arr));
     }
 
     public static void quickSort(int[] arr, int left, int right) {
@@ -12,11 +16,11 @@ public class QuickSort {
 
         int temp = 0;
         while (l < r) {
-            // 找到左边大于pivot
+            // 找到左边大于等于pivot
             while (arr[l] < pivot) {
                 l++;
             }
-            // 找到右边小于pivot
+            // 找到右边小于等于pivot
             while (arr[r] > pivot) {
                 r--;
             }
@@ -27,7 +31,7 @@ public class QuickSort {
             temp = arr[l];
             arr[l] = arr[r];
             arr[r] = temp;
-
+            // 抓着和pivot相等的数，往中间靠
             if (arr[l] == pivot) {
                 r--;
             }
