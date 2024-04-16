@@ -1454,3 +1454,585 @@ public static void radixSort(int[] arr) {
 ```
 ### 常用排序算法对比
 ![allsorts](img\allsorts.png)
+
+## 查找
+### 线性查找
+```java
+public static int seqSearch(int[] arr, int val) {
+    for (int i = 0; i < arr.length; i++) {
+        if (arr[i] == val) {
+            return i;
+        }
+    }
+    return -1;
+}
+```
+### 二分查找
+- 只能对于有序数列进行查找
+- 首先确定数组中间下标
+- 对比findVal 和 arr[mid]
+    - findVal > arr[mid] 说明要找的数在mid右边，向右递归
+    - findVal < arr[mid] 说明要找的数在mid左边，向左递归
+    - findVal == arr[mid] 说明找到，返回
+- 递归结束
+    - 找到并返回
+    - 没有找到，左指针>右指针，退出
+```java
+/**
+ * 二分查找
+ * @param arr     数组
+ * @param left    左边索引
+ * @param right   右边索引
+ * @param findVal 要找的值
+ * @return
+ */
+public static int binarySearch(int[] arr, int left, int right, int findVal) {
+    if (left > right) {
+        return -1;
+    }
+    int mid = (left + right) / 2;
+    int midVal = arr[mid];
+
+    if (findVal > midVal) {
+        return binarySearch(arr, mid + 1, right, findVal);
+    } else if (findVal < midVal) {
+        return binarySearch(arr, left, mid - 1, findVal);
+    } else {
+        return mid;
+    }
+}
+```
+- 拓展
+    - 找到多个相同值的下标
+    ```java 
+    public static ArrayList binarySearch2(int[] arr, int left, int right, int findVal) {
+        if (left > right) {
+            return new ArrayList<>();
+        }
+        int mid = (left + right) / 2;
+        int midVal = arr[mid];
+
+        if (findVal > midVal) {
+            return binarySearch2(arr, mid + 1, right, findVal);
+        } else if (findVal < midVal) {
+            return binarySearch2(arr, left, mid - 1, findVal);
+        } else {
+            // 找到值不用马上返回
+            // 向左向右扫描
+            // 将Arraylist返回
+            ArrayList<Integer> list  = new ArrayList<>();
+            int temp = mid - 1;
+            while(true) {
+                if (temp < 0 || arr[temp] != findVal) {
+                    break;
+                }
+                list.add(temp);
+                temp--;
+            }
+
+            list.add(mid);
+
+            temp = mid + 1;
+            while (true) {
+                if (temp > arr.length - 1 || arr[temp] != findVal) {
+                    break;
+                }
+                list.add(temp);
+                temp++;
+            }
+            return list;
+        }
+    }
+    ```
+
+### 插值查找
+- 同样只适用于有序数列
+- 不同于二分查找，插值查找取中间点的算法不同
+    - ![insertvaluesearch](img\insertvaluesearch.png)
+- 对于数据量较大，关键字分布比较均匀时，插值查找速度较快
+- 关键字分布不均匀的情况下，该方法不一定比二分查找快
+```java
+public static int insertValueSearch(int[] arr, int left, int right, int findVal) {
+    // findVal < arr[0] || findVal > arr[arr.length - 1]
+    // 是必要检查条件，否则如果findVal太大，可能会导致后面arr[mid]越界
+    if (left > right || findVal < arr[0] || findVal > arr[arr.length - 1]) {
+        return -1;
+    }
+
+    // 自适应算法
+    int mid = left + (right - left) * (findVal - arr[left]) / (arr[right] - arr[left]);
+    int midVal = arr[mid];
+    if (findVal > midVal){
+        return insertValueSearch(arr, mid + 1, right, findVal);
+    } else if (findVal < midVal) {
+        return insertValueSearch(arr, left, mid - 1, findVal);
+    } else {
+        return mid;
+    }
+}
+```
+
+### 斐波那契查找
+- 和插值查找相似，只是更改了中间结点的获取算法
+- ![fibonaccisearch](img\fibonaccisearch.png)
+```java
+// 需要先获取到一个斐波那契数列
+public static int[] fib() {
+    int[] f = new int[maxSize];
+    f[0] = 1;
+    f[1] = 1;
+    for (int i = 2; i < maxSize; i++) {
+        f[i] = f[i - 1] + f[i - 2];
+    }
+    return f;
+}
+
+/**
+ * 斐波那契查找算法
+ * 使用非递归方法
+ * @param arr
+ * @param key 需要查找的关键值
+ * @return
+ */
+public static int fibSearch(int[] arr, int key) {
+    int low = 0;
+    int high = arr.length - 1;
+    int k = 0;
+    int mid = 0;
+    int f[] = fib();
+    // 1、1、2、3、5、8、13、21、34……
+    while (high > f[k] - 1) {
+        k++;
+    }
+    // 因为f[k]值可能大于arr的长度，我们需要用Arrays构造一个新数组，并指向temp
+    // 不足部分用0填充
+    int[] temp = Arrays.copyOf(arr, f[k]);
+    for (int i = high + 1; i < temp.length; i++) {
+        temp[i] = arr[high];
+    }
+    while (low <= high ) {
+        mid = low + f[k - 1] - 1;
+        if(key < temp[mid]) {
+            high = mid - 1;
+            k--;
+        } else if (key > temp[mid]) {
+            low = mid + 1;
+            k -= 2;
+        } else {
+            return high;
+        }
+    }
+    return -1;
+}
+```
+
+## 哈希表
+- 根据关键码值（key value）而直接进行访问的数据结构。通过把关键码值映射到表中一个位置来访问记录，以加快查找速度。映射函数叫散列函数，存放记录的数组叫散列表
+- 可以用来作为缓存层
+    - 缓存产品
+        - Redis
+        - Memcache
+
+```java
+class HashTab {
+    private EmpLinkedList[] empLinkedListsArray;
+    private int size;
+
+    public HashTab(int size) {
+        empLinkedListsArray = new EmpLinkedList[size];
+        this.size = size;
+        for (int i = 0; i < size; i++) {
+            empLinkedListsArray[i] = new EmpLinkedList();
+        }
+    }
+    public void add(Emp emp) {
+        int empLinkedListsNO = hashFun(emp.id);
+        empLinkedListsArray[empLinkedListsNO].append(emp);
+    }
+    public void list() {
+        for (EmpLinkedList empLinkedList : empLinkedListsArray) {
+            empLinkedList.list();
+        }
+    }
+    public void findEmpById(int id) {
+        int empLinkedListsNO = hashFun(id);
+        Emp emp = empLinkedListsArray[empLinkedListsNO].findEmpById(id);
+        if (emp != null) {
+            System.out.println(emp);
+        } else {
+            System.out.println("noFound");
+        }
+    }
+    // 编写一个散列函数
+    public int hashFun(int id) {
+        return id % size;
+    }
+}
+
+class EmpLinkedList {
+    private Emp head;
+
+    // add
+    public void append(Emp emp) {
+        Emp temp = head;
+        if (temp == null) {
+            head = emp;
+            return;
+        }
+        while (temp.next != null) {
+            temp = temp.next;
+        }
+        temp.next = emp;
+        return;
+    }
+    // list
+    public void list() {
+        if (head == null) {
+            System.out.println("isEmpty");
+            return;
+        }
+        Emp temp = head;
+        while (temp != null) {
+            System.out.print(temp);
+            temp = temp.next;
+        }
+        System.out.println();
+        return;
+    }
+    // find
+    public Emp findEmpById(int id) {
+        if (head == null) {
+            System.out.println("isEmpty");
+        }
+        Emp temp = head;
+        while (temp != null) {
+            if (temp.id == id) {
+                break;
+            }
+            temp = temp.next;
+        }
+        return temp;
+    }
+}
+
+// 雇员 结点
+class Emp {
+    public int id;
+    public String name;
+    public Emp next;
+
+    public Emp(int id, String name) {
+        this.id = id;
+        this.name = name;
+    }
+}
+```
+## 树结构
+- 提高数据存储，读取的效率。既可以保证数据检索速度，同时也可以保证数据的插入，删除，修改的速度
+### 二叉树
+- 每个节点最多只能有两个节点
+- 二叉树的子节点分为左节点和右节点
+- 如果所有叶子节点都在最后一层，并且节点总数2^(n-1),n为层数，则称为满二叉树
+- 如果二叉树的所有叶子节点都在最后一层和倒数第二层，而且最后一层的叶子节点在左边连续，倒数第二层叶子节点在右边连续，称为完全二叉树
+#### 前中后序遍历
+- 前序
+    - 先输出当前节点
+    - 如果左节点不为空，则递归继续前序遍历
+    - 如果右节点不为空，则递归继续前序遍历
+- 中序
+    - 如果左节点不为空，则递归继续中序遍历
+    - 输出当前节点
+    - 如果右节点不为空，则递归继续前序遍历
+- 后序
+    - 如果左节点不为空，则递归继续中序遍历
+    - 如果右节点不为空，则递归继续前序遍历
+    - 输出当前节点
+```java
+// 树类
+class BinaryTree {
+    private Hero root;
+
+    public void setRoot(Hero root) {
+        this.root = root;
+    }
+
+    public void preOrder() {
+        if (this.root != null) {
+            this.root.preOrder();
+        } else {
+            System.out.println("isEmpty");
+        }
+    }
+
+    public void infixOrder() {
+        if (this.root != null) {
+            this.root.infixOrder();
+        } else {
+            System.out.println("isEmpty");
+        }
+    }
+
+    public void postOrder() {
+        if (this.root != null) {
+            this.root.postOrder();
+        } else {
+            System.out.println("isEmpty");
+        }
+    }
+}
+// 节点类
+class Hero {
+    private int no;
+    private String name;
+    private Hero left;
+    private Hero right;
+
+    public Hero(int no, String name) {
+        this.no = no;
+        this.name = name;
+    }
+    // 前序遍历
+    public void preOrder() {
+        System.out.println(this);
+        if (this.left != null) {
+            this.left.preOrder();
+        }
+        if (this.right != null) {
+            this.right.preOrder();
+        }
+    }
+    // 中序遍历
+    public void infixOrder() {
+        if (this.left != null) {
+            this.left.infixOrder();
+        }
+        System.out.println(this);
+        if (this.right != null) {
+            this.right.infixOrder();
+        }
+    }
+    // 后续遍历
+    public void postOrder() {
+        if (this.left != null) {
+            this.left.postOrder();
+        }
+        if (this.right != null) {
+            this.right.postOrder();
+        }
+        System.out.println(this);
+    }
+}
+```
+#### 前中后序查找
+- 前序
+    - 判断当前节点是否为所需节点
+    - 如果是，返回当前节点
+    - 如果不是，则判断当前节点的左节点是否为空，如果不是，则递归谦虚查找
+    - 如果左递归前序查找，找到节点，则返回，否则继续判断，当前节点的右节点是否为空，如果不是，则继续向右递归前序查找
+- 中序
+    - 判断当前节点的左节点是否为空，如果不为空，则递归中序查找
+    - 如果找到，则返回，如果没有找到，就和当前节点比较，如果是则返回当前节点，否则继续向右递归中序查找
+    - 如果右递归中序查找，找到就返回，否则返回null
+- 后序
+    - 判断当前节点的节点是否为空，如果不为空，则递归后序查找
+    - 如果找到，则返回，如果没有找到，就判断当前节点的右节点是否为空，如果不为空，则右递归进行后序查找，如果找到就返回
+    - 就和当前节点进行，如果是则返回，否则返回null
+```java
+public Hero preOrderSearch(int no) {
+    // 比较当前节点是不是
+    if (this.no == no) {
+        return this;
+    }
+    // 判断当前节点的左节点是否为空，如果不为空，则递归前序查找
+    // 如果左递归前序查找找到节点，则返回
+    Hero resNode = null;
+    if (this.left != null) {
+        resNode = this.left.preOrderSearch(no);
+    }
+    if (resNode != null) {
+        return resNode;
+    }
+    // 判断右节点是否为空，如果不是，则向右递归前序查找
+    if (this.right != null) {
+        resNode = this.right.preOrderSearch(no);
+    }
+    return resNode;
+}
+
+public Hero infixOrderSearch(int no) {
+    Hero resNode = null;
+    if (this.left != null) {
+        resNode = this.left.infixOrderSearch(no);
+    }
+    if (resNode != null) {
+        return resNode;
+    }
+    if (this.no == no) {
+        return this;
+    }
+    if (this.right != null) {
+        resNode = this.right.infixOrderSearch(no);
+    }
+    return resNode;
+}
+
+public Hero postOrderSearch(int no) {
+    Hero resNode = null;
+    if (this.left != null) {
+        resNode = this.left.postOrderSearch(no);
+    }
+    if (resNode != null) {
+        return resNode;
+    }
+    if (this.right != null) {
+        resNode = this.right.postOrderSearch(no);
+    }
+    if (resNode != null) {
+        return resNode;
+    }
+    if (this.no == no) {
+        return this;
+    }
+    return resNode;
+}
+```
+#### 删除节点
+- 如果删除的节点是叶子节点，则删除该节点
+- 如果删除的节点是非叶子节点，则删除该树
+```java
+// 在二叉树类中
+public void delNode(int no) {
+    if (root != null){
+        if(root.getNo() == no) {
+            root = null;
+            return;
+        }
+        root.delNode(no);
+    } else {
+        System.out.println("isEmpty");
+    }
+}
+
+/* 在节点类中
+ * 因为这个二叉树是单向的，所以我们是判断当前节点的子节点是否需要
+ * 删除节点，而不能去判断当前节点是否需要删除
+ */
+public void delNode(int no) {
+    // 如果当前节点的左节点不为空，且是需要删除的节点，就将this.left = null 并返回
+    // 如果this.left 为空，this.left.no 会报错
+    if (this.left != null && this.left.no == no) {
+        this.left = null;
+        return;
+    }
+    // 同理如上
+    if (this.right != null && this.right.no == no) {
+        this.right = null;
+        return;
+    }
+    // 向左递归删除
+    if(this.left != null){
+        this.left.delNode(no);
+    }
+    if(this.right != null){
+        this.right.delNode(no);
+    }  
+}
+```
+#### 顺序存储二叉树
+- 数组存储方式和树的存储方式可以相互转换
+- 顺序存储二叉树的特点
+    - 顺序二叉树通常只考虑完全二叉树
+    - 第n个元素的左子节点为2*n+1
+    - 第n个元素的右子节点为2*n+2
+    - 第n个元素的父节点为(n-1)/2
+    - n表示二叉树的第几个元素（从0开始编号）
+```java
+// 对preOrder重载
+public void preOrder(){
+    this.preOrder(0);
+}
+
+/**
+ * 
+ * @param index     数组下标
+ */
+public void preOrder(int index) {
+    if (arr == null || arr.length == 0) {
+        System.out.println("isEmpty");
+    }
+    System.out.println(arr[index]);
+    if((index * 2 + 1) < arr.length) {
+        preOrder(index * 2 + 1);
+    }
+    if((index * 2 + 2) < arr.length) {
+        preOrder(index * 2 + 2);
+    }
+}
+```
+#### 线索化二叉树
+- n个节点的二叉链表中有n+1个空指针域。利用二叉链表中的空指针域，存放指向该节点的某种遍历次序下的前驱和后继节点的指针。这种附加的指针称为“线索”
+- 这种加上了线索的二叉链表称为线索链表，相应的二叉树称为线索二叉树（Threaded Binary Tree）。根据线索性质不同，线索二叉树可以分为前序线索二叉树，中序线索二叉树和后序线索二叉树
+- 一个结点的前一个节点称为前驱节点
+- 一个节点的后一个节点称为后继节点
+- 当线索化二叉树后，Node节点的属性left和right，有如下情况：
+    - left指向左子树，也可能指向前驱节点
+    - right指向右子树，也可能指向后继节点
+```java
+// 中序线索化二叉树
+// 二叉树类中
+private Hero pre;
+
+// 编写对二叉树进行中序线索化的方法
+/**
+ * 
+ * @param node 当前需要线索化的节点
+ */
+public void threadedNodes() {
+    this.threadedNodes(root);
+}
+
+public void threadedNodes(Hero node) {
+    if (node == null) {
+        return;
+    }
+    // 先线索化左子树
+    threadedNodes(node.getLeft());
+    // 线索化当前节点
+    // 先处理当前节点的前驱节点
+    if (node.getLeft() == null) {
+        // 左指针指向前驱节点，并修改当前左指针的类型
+        node.setLeft(pre);
+        node.setLeftType(1);
+    }
+    // 处理后继节点，前驱节点的后继节点指向当前节点
+    if (pre != null && pre.getRight() == null) {
+        pre.setRight(node);
+        pre.setRightType(1);
+    }
+    pre = node;
+    // 线索化右子树
+    threadedNodes(node.getRight());
+}
+```
+- 遍历线索化二叉树
+    - 通过线型方式遍历，因此无需使用递归方式，提高效率
+    ```java
+    // 遍历线索化二叉树
+    public void threadedList() {
+        Hero node = root;
+        while(node != null) {
+            // 循环的找到leftType == 1的节点
+            // 说明该节点是按照线索化处理后的有效节点
+            while(node.getLeftType() == 0) {
+                node = node.getLeft();
+            }
+            System.out.println(node);
+            while(node.getRightType() == 1) {
+                node = node.getRight();
+                System.out.println(node);
+            }
+            // 替换这个遍历节点
+            node = node.getRight();
+        }
+    }
+    ```
