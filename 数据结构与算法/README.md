@@ -1984,7 +1984,6 @@ private Hero pre;
 
 // 编写对二叉树进行中序线索化的方法
 /**
- * 
  * @param node 当前需要线索化的节点
  */
 public void threadedNodes() {
@@ -2036,3 +2035,231 @@ public void threadedNodes(Hero node) {
         }
     }
     ```
+### 堆排序
+- 堆排序是利用树结构而设计的排序算法，是一种选择排序。最坏，最好，平均时间复杂度均为O(nlogn)，它是不稳定排序
+- 具有以下性质的完全二叉树：每个节点的值都大于或等于其左右子节点的值，称为大顶堆。注意，没有要求左节点和右节点的值大小关系
+- 每个结点的值都小于或等于左右子节点的值，称为小顶堆
+- 升序使用大顶堆，降序使用小顶堆
+    1. 将无序序列构建成一个堆，根据升序降序需求选择大顶堆或小顶堆
+    2. 将堆顶元素与末尾元素交换，将最大元素放到数组末端
+    3. 重新调整结构，使其满足堆定义，然后继续交换堆顶元素与当前末尾元素，反复执行调整+交换，直到整个序列有序
+```java
+public static void heapSort(int[] arr) {
+    int temp;
+    for (int i = arr.length / 2 - 1; i >= 0; i--) {
+        adjustHeap(arr, i, arr.length);
+    }
+    for (int i = arr.length - 1; i > 0; i--) {
+        temp = arr[i];
+        arr[i] = arr[0];
+        arr[0] = temp;
+        adjustHeap(arr, 0, i);
+    }
+}
+
+// 将一个数组调整成大顶堆
+/**
+ * 将以i对应的非叶子节点的树调整成大顶堆
+ * 
+ * @param arr
+ * @param i      表示非叶子节点的索引
+ * @param length 表示对多少个元素调整
+ */
+public static void adjustHeap(int arr[], int i, int length) {
+    int temp = arr[i];
+    // j = i * 2 + 1 i的左子节点
+    for (int j = i * 2 + 1; j < length; j = j * 2 + 1) {
+        if (j + 1 < length && arr[j] < arr[j + 1]) {
+            j++; // 右子节点
+        }
+        if (arr[j] > temp) {
+            arr[i] = arr[j];
+            i = j;
+        } else {
+            break;
+        }
+    }
+    // 已经将以i为父节点的树的最大值放在了堆顶
+    arr[i] = temp;
+}
+```
+
+### 赫夫曼树
+- 给定n个权值作为n个叶子节点，构造一棵二叉树，若该树的带权路径长度达到最小，称之为最优二叉树，也称赫夫曼树。
+    - 路径和路径长度：在一棵树中，从一个节点往下可以达到的孩子或孙子节点之间的通路，称为路径。通路中分支的数目称为路径长度。若规定根节点的层数为1，则从根节点到L层节点的路径长度为L-1
+    - 节点的权及带权路径长度：若将树中节点赋给一个有意义的数值，该数值称为权。节点的带权路径长度：从根节点到该节点之间的路径长度与该节点的权的乘积。
+    - 数的带权路径长度：树的带权路径长度规定为所有叶子节点的带权路径长度之和，即为WPL（weighted path length），权值越大的节点离根节点越近的二叉树才是最优二叉树
+    - WPL最小的就是赫夫曼树
+```java
+public static Node createHuffmanTree(int[] arr) {
+    // 遍历数组并为每个元素创建一个Node
+    // 将所有Node放到ArrayList
+    List<Node> nodes = new ArrayList<>();
+    for (int val : arr) {
+        nodes.add(new Node(val));
+    }
+    while(nodes.size() > 1){
+        // 从小到大排序
+        // Node实现了Comparable接口
+        Collections.sort(nodes);
+        // 取出最小
+        Node left = nodes.get(0);
+        // 取出第二小
+        Node right = nodes.get(1);
+        // 构建一个新二叉树
+        Node parent = new Node(left.value + right.value);
+        parent.left = left;
+        parent.right = right;
+        // 从ArrayList中删除处理过的节点
+        nodes.remove(left);
+        nodes.remove(right);
+        // 将parent添加回ArrayList
+        nodes.add(parent);
+    }
+    return nodes.get(0);
+}
+```
+### 赫夫曼编码
+- 电讯通信中的经典的应用之一
+- 应用于数据文件压缩，压缩率通常在20-90之间
+- 赫夫曼码是可变长编码（VLC）的一种 
+- 原理剖析
+    - 定长编码
+        - 根据字符串中的字符在ascii码中的编号进行编码，然后转换成二进制
+    - 变长编码
+        - 将字符串中的每个字符进行统计。对每种字符重新编码，再按字符串中的顺序编辑原字符串。字符的编码不能是其他字符编码的前缀，符合此要求的叫前缀编码，既 不能匹配到重复的编码
+    - 赫夫曼编码
+        - 将字符进行统计，把字符出现的频率当作权重。通过赫夫曼树，对字符进行编码。左子节点为0，右子节点为1。
+        - 赫夫曼树会根据创建树的顺序不一样而不一样但是压缩后的大小是一样的
+    
+    ![huffman](img\huffman.gif)
+```java
+// 将字符转成节点并进行统计
+private static List<Node1> getNode1s(byte[] bytes) {
+    ArrayList<Node1> Node1s = new ArrayList<>();
+    HashMap<Byte, Integer> counts = new HashMap<>();
+    // 统计每个字符的频率
+    for (byte b : bytes) {
+        Integer count = counts.get(b);
+        if (count == null) {
+            counts.put(b, 1);
+        } else {
+            counts.put(b, ++count);
+        }
+    }
+    // 将字符和其频率包装，放在节点中
+    for (Map.Entry<Byte, Integer> entry : counts.entrySet()) {
+        Node1s.add(new Node1(entry.getKey(), entry.getValue()));
+    }
+    return Node1s;
+}
+```
+```java
+// 生成赫夫曼树
+private static Node1 createHuffmanTree(List<Node1> nodes) {
+    while (nodes.size() > 1) {
+        Collections.sort(nodes);
+        Node1 left = nodes.get(0);
+        Node1 right = nodes.get(1);
+
+        Node1 parent = new Node1(null, right.weight + left.weight);
+        parent.left = left;
+        parent.right = right;
+
+        nodes.remove(left);
+        nodes.remove(right);
+        nodes.add(parent);
+    }
+    return nodes.get(0);
+}
+```
+```java
+// 根据生成的赫夫曼树，对字符进行编码，获得编码表
+static StringBuilder stringBuilder = new StringBuilder();
+static Map<Byte, String> huffmanCodes = new HashMap<>();
+
+/**
+ * 将传入的node节点的所有叶子节点的赫夫曼编码得到，并放入huffmanCodes集合
+ * 
+ * @param node          节点
+ * @param code          路径：左子节点0，右子节点1
+ * @param stringBuilder 用于拼接路径
+ */
+private static void getCodes(Node1 node, String code, StringBuilder stringBuilder) {
+    StringBuilder stringBuilder2 = new StringBuilder(stringBuilder);
+    stringBuilder2.append(code);
+    if (node != null) {
+        // 向左，向右递归
+        if (node.data == null) {    // 非叶子节点
+            getCodes(node.left, "0", stringBuilder2);
+            getCodes(node.right, "1", stringBuilder2);
+        } else {
+            huffmanCodes.put(node.data, stringBuilder2.toString());
+        }
+    }
+}
+// 方法重载
+private static Map<Byte, String> getCodes(Node1 root) {
+    if (root == null) {
+        return null;
+    }
+    getCodes(root.left, "0", stringBuilder);
+    getCodes(root.right, "1", stringBuilder);
+    return huffmanCodes;
+}
+```
+```java
+/**
+ * 对照编码表，将原来的字符数组进行编码，再按照字符大小重新排版，返回字符数组
+ * @param bytes         原始字符串对应的byte[]
+ * @param huffmanCodes  生成的赫夫曼编码map
+ * @return              返回赫夫曼编码处理后的byte[]
+ */
+private static byte[] zip(byte[] bytes, Map<Byte, String> huffmanCodes) {
+    // 利用huffmanCodes将bytes转成赫夫曼编码对应的字符串
+    StringBuilder stringBuilder = new StringBuilder();
+
+    for (byte b : bytes) {
+        stringBuilder.append(huffmanCodes.get(b));
+    }
+    // 将stringBuilder转成byte[]
+    int len;
+    if (stringBuilder.length() % 8 == 0) {
+        len = stringBuilder.length() / 8;
+    } else {
+        len = stringBuilder.length() / 8 + 1;
+    }
+    // 创建存储压缩后的byte数组
+    byte[] huffmanCodeBytes = new byte[len];
+    int index = 0;
+    for (int i = 0; i < stringBuilder.length(); i += 8) {
+        String strByte;
+        if (i + 8 > stringBuilder.length()) {
+            strByte = stringBuilder.substring(i);
+        } else {
+            strByte = stringBuilder.substring(i, i + 8);
+        }
+        huffmanCodeBytes[index] = (byte) Integer.parseInt(strByte, 2);
+        index++;
+    }
+    return huffmanCodeBytes;
+}
+```
+```java
+/**
+ * 使用一个方法，将前面的方法封装
+ * @param bytes 原始的字符串对应的字节数组
+ * @return      经过赫夫曼编码处理后的字节数组
+ */
+private static byte[] huffmanZip(byte[] bytes) {
+    // 给每个字节创建节点 
+    List<Node1> Node1s = getNode1s(bytes);
+    // 创建赫夫曼树
+    Node1 head = createHuffmanTree(Node1s);
+    // 赫夫曼编码表
+    Map<Byte, String> huffmanCodes = getCodes(head);
+    // 生成赫夫曼编码，压缩得到压缩后的赫夫曼编码字节数组
+    byte[] zip = zip(bytes, huffmanCodes);
+    return zip;
+}
+```

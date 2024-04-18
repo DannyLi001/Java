@@ -1,0 +1,185 @@
+package DataStructure;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class HuffmanCode {
+    public static void main(String[] args) {
+        String content = "i like like like java do you like a java";
+        byte[] contentBytes = content.getBytes();
+        byte[] huffmanZip = huffmanZip(contentBytes);
+        
+        
+    }
+
+    /**
+     * 使用一个方法，将前面的方法封装
+     * @param bytes 原始的字符串对应的字节数组
+     * @return      经过赫夫曼编码处理后的字节数组
+     */
+    private static byte[] huffmanZip(byte[] bytes) {
+        // 给每个字节创建节点 
+        List<Node1> Node1s = getNode1s(bytes);
+        // 创建赫夫曼树
+        Node1 head = createHuffmanTree(Node1s);
+        // 赫夫曼编码表
+        Map<Byte, String> huffmanCodes = getCodes(head);
+        // 生成赫夫曼编码，压缩得到压缩后的赫夫曼编码字节数组
+        byte[] zip = zip(bytes, huffmanCodes);
+        return zip;
+    }
+
+    // 将字符转成节点并进行统计
+    private static List<Node1> getNode1s(byte[] bytes) {
+        ArrayList<Node1> Node1s = new ArrayList<>();
+        HashMap<Byte, Integer> counts = new HashMap<>();
+        for (byte b : bytes) {
+            Integer count = counts.get(b);
+            if (count == null) {
+                counts.put(b, 1);
+            } else {
+                counts.put(b, ++count);
+            }
+        }
+
+        for (Map.Entry<Byte, Integer> entry : counts.entrySet()) {
+            Node1s.add(new Node1(entry.getKey(), entry.getValue()));
+        }
+        return Node1s;
+    }
+
+    // 用所有节点生成一个赫夫曼树
+    private static Node1 createHuffmanTree(List<Node1> nodes) {
+        while (nodes.size() > 1) {
+            Collections.sort(nodes);
+            Node1 left = nodes.get(0);
+            Node1 right = nodes.get(1);
+
+            Node1 parent = new Node1(null, right.weight + left.weight);
+            parent.left = left;
+            parent.right = right;
+
+            nodes.remove(left);
+            nodes.remove(right);
+            nodes.add(parent);
+        }
+        return nodes.get(0);
+    }
+
+    private static void preOrder(Node1 root) {
+        if (root == null) {
+            System.out.println("isEmpty");
+        } else {
+            root.preOrder();
+        }
+    }
+
+    // 对字符进行编码
+    static StringBuilder stringBuilder = new StringBuilder();
+    static Map<Byte, String> huffmanCodes = new HashMap<>();
+
+    private static Map<Byte, String> getCodes(Node1 root) {
+        if (root == null) {
+            return null;
+        }
+        getCodes(root.left, "0", stringBuilder);
+        getCodes(root.right, "1", stringBuilder);
+        return huffmanCodes;
+    }
+
+    /**
+     * 将传入的node节点的所有叶子节点的赫夫曼编码得到，并放入huffmanCodes集合
+     * 
+     * @param node          节点
+     * @param code          路径：左子节点0，右子节点1
+     * @param stringBuilder 用于拼接路径
+     */
+    private static void getCodes(Node1 node, String code, StringBuilder stringBuilder) {
+        StringBuilder stringBuilder2 = new StringBuilder(stringBuilder);
+        stringBuilder2.append(code);
+        if (node != null) {
+            if (node.data == null) {
+                getCodes(node.left, "0", stringBuilder2);
+                getCodes(node.right, "1", stringBuilder2);
+            } else {
+                huffmanCodes.put(node.data, stringBuilder2.toString());
+            }
+        }
+    }
+
+    /**
+     * 将字符串对应的byte[]数组，通过生成的赫夫曼编码表，返回一个赫夫曼编码压缩后的byte[]
+     * 
+     * @param bytes        原始字符串对应的byte[]
+     * @param huffmanCodes 生成的赫夫曼编码map
+     * @return 返回赫夫曼编码处理后的byte[]
+     */
+    private static byte[] zip(byte[] bytes, Map<Byte, String> huffmanCodes) {
+        // 利用huffmanCodes将bytes转成赫夫曼编码对应的字符串
+        StringBuilder stringBuilder = new StringBuilder();
+
+        for (byte b : bytes) {
+            stringBuilder.append(huffmanCodes.get(b));
+        }
+        // 将stringBuilder转成byte[]
+        int len;
+        if (stringBuilder.length() % 8 == 0) {
+            len = stringBuilder.length() / 8;
+        } else {
+            len = stringBuilder.length() / 8 + 1;
+        }
+        // 创建存储压缩后的byte数组
+        byte[] huffmanCodeBytes = new byte[len];
+        int index = 0;
+        for (int i = 0; i < stringBuilder.length(); i += 8) {
+            String strByte;
+            if (i + 8 > stringBuilder.length()) {
+                strByte = stringBuilder.substring(i);
+            } else {
+                strByte = stringBuilder.substring(i, i + 8);
+            }
+            huffmanCodeBytes[index] = (byte) Integer.parseInt(strByte, 2);
+            index++;
+        }
+
+        return huffmanCodeBytes;
+    }
+
+}
+
+class Node1 implements Comparable<Node1> {
+    Byte data;
+    int weight;
+    Node1 left;
+    Node1 right;
+
+    public Node1(Byte data, int weight) {
+        this.data = data;
+        this.weight = weight;
+    }
+
+    @Override
+    public int compareTo(Node1 o) {
+        return this.weight - o.weight;
+    }
+
+    @Override
+    public String toString() {
+        return data == null ? "Node1 [data=" + data + ", weight=" + weight + "]"
+                : "Node1 [data=" + (char) (byte) data + ", weight=" + weight + "]";
+    }
+
+    public void preOrder() {
+        System.out.println(this);
+        if (this.left != null) {
+            this.left.preOrder();
+        }
+        if (this.right != null) {
+            this.right.preOrder();
+        }
+    }
+}
