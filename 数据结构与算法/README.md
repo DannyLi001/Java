@@ -2263,3 +2263,356 @@ private static byte[] huffmanZip(byte[] bytes) {
     return zip;
 }
 ```
+- 解压过程
+```java
+/**
+ * 将一个byte转成一个二进制的字符串
+ * @param flag 表示是否需要补高位，最后字节无需补高位
+ * @param b    传入的byte
+ * @return 对应的二进制字符串（补码形式）
+ */
+private static String byteToBitString(boolean flag, byte b) {
+    int temp = b;
+    if (flag) {
+        // 按位与256 1 0000 0000 | 0000 0001 => 1 0000 0001
+        temp |= 256;
+    }
+    // 返回的是temp对应的二进制的补码 4bytes 16bits
+    String str = Integer.toBinaryString(temp);
+    if (flag) {
+        return str.substring(str.length() - 8);
+    } else {
+        return str;
+    }
+}
+```
+```java
+/**
+ * 对压缩文件解码
+ * @param huffmanCodes 赫夫曼编码表
+ * @param huffmanBytes 赫夫曼编码字节数组
+ * @return 原来的字符串对应数组
+ */
+private static byte[] decode(Map<Byte, String> huffmanCodes, byte[] huffmanBytes) {
+    StringBuilder stringBuilder = new StringBuilder();
+    for (int i = 0; i < huffmanBytes.length; i++) {
+        stringBuilder.append(byteToBitString(i != huffmanBytes.length - 1, huffmanBytes[i]));
+    }
+    // 编码表转解码表
+    Map<String, Byte> map = new HashMap<>();
+    for (Map.Entry<Byte, String> entry : huffmanCodes.entrySet()) {
+        map.put(entry.getValue(), entry.getKey());
+    }
+    // 把字符串按照赫夫曼解码表进行解码
+    ArrayList<Byte> list = new ArrayList<>();
+    for (int i = 0; i < stringBuilder.length();) {
+        int count = 1;
+        boolean flag = true;
+        Byte b = null;
+
+        while (flag) {
+            String key = stringBuilder.substring(i, i + count);
+            b = map.get(key);
+            if (b == null) {
+                count++;
+            } else {
+                flag = false;
+            }
+        }
+        list.add(b);
+        i += count;
+    }
+    byte[] b = new byte[list.size()];
+    for (int i = 0; i < b.length; i++) {
+        b[i] = list.get(i);
+    }
+    return b;
+}
+```
+- 文件压缩与解压IO
+```java
+// 压缩
+public static void zipFile(String srcFile, String dstFile) {
+    FileInputStream fis = null;
+    FileOutputStream fos = null;
+    ObjectOutputStream oos = null;
+    try {
+        // 创建文件输入流
+        fis = new FileInputStream(srcFile);
+        // 创建一个和源文件大小一样的byte[]
+        byte[] b = new byte[fis.available()];
+        // 读取文件
+        fis.read(b);
+        // 对文件压缩
+        byte[] huffmanBytes = huffmanZip(b);
+        // 创建文件输出流，存放压缩文件
+        fos = new FileOutputStream(dstFile);
+        // 使用ObjectOutputStream输出
+        oos = new ObjectOutputStream(fos);
+        oos.writeObject(huffmanBytes);
+        // 存放赫夫曼编码表
+        oos.writeObject(huffmanCodes);
+    } catch (Exception e) {
+        // TODO: handle exception
+    } finally {
+        try {
+            oos.close();
+            fos.close();
+            fis.close();
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+    }
+}
+```
+```java
+// 解压
+public static void unzipFile(String zipFile, String dstFile) {
+    FileInputStream fis = null;
+    FileOutputStream fos = null;
+    ObjectInputStream ois = null;
+    try {
+        fis = new FileInputStream(zipFile);
+        ois = new ObjectInputStream(fis);
+        byte[] huffmanBytes = (byte[]) ois.readObject();
+        Map<Byte, String> huffmanCodes = (Map<Byte, String>) ois.readObject();
+        byte[] bytes = decode(huffmanCodes, huffmanBytes);
+        fos = new FileOutputStream(dstFile);
+        fos.write(bytes);
+
+    } catch (Exception e) {
+        // TODO: handle exception
+    } finally {
+        try {
+            fos.close();
+            ois.close();
+            fis.close();
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+    }
+}
+```
+### 二叉排序树 BST
+- 任何一个非叶子节点，要求左子节点的值比当前节点的值小，右子节点的值比当前节点的值大。
+- 如果值相同，可以将该节点放在左子节点或右子节点  
+
+创建
+```java
+// 节点类
+// 添加
+public void add(Node node) {
+    if(node == null) {
+        return;
+    }
+    // 比较添加节点的值和添加节点的值
+    if(node.value < this.value) {
+        if(this.left == null) {
+            this.left = node;
+        } else {
+            this.left.add(node);
+        }
+    } else {
+        if(this.right == null) {
+            this.right = node;
+        } else {
+            this.right.add(node);
+        }
+    }
+}
+```
+删除
+```java
+// 二叉树类
+/**
+ * 删除目标节点下 与目标值最接近的节点值 并删除该节点
+ * @param node  删除的目标节点
+ * @return      与目标节点值最接近的值
+ */
+public int delRightTreeMin(Node node) {
+    Node target = node;
+    while(target.left != null) {
+        target = target.left;
+    }
+    // 删除最接近值的节点（叶子节点）
+    delNode(target.value);
+    return target.value;
+}
+public void delNode(int value) {
+    if (root == null) {
+        return;
+    } else {
+        Node targetNode = search(value);
+        if(targetNode == null) {
+            return;
+        }
+        if(root.left == null && root.right == null) {
+            root = null;
+            return;
+        }
+        Node parentNode = searchParent(value);
+        // 目标节点是叶子节点
+        if(targetNode.left == null && targetNode.right == null) {
+            if(parentNode.left != null && parentNode.left.value == value) {
+                parentNode.left = null;
+            } else if(parentNode.right != null && parentNode.right.value == value) {
+                parentNode.right = null;
+            }
+        // 目标节点有左右两个子节点
+        } else if (targetNode.left != null && targetNode.right != null){
+            // 目标节点下 与目标节点值最接近的节点值 并与之替换
+            int minVal  = delRightTreeMin(targetNode.right);
+            targetNode.value = minVal;
+        // 目标节点有一个子节点
+        } else {
+            // 有左子节点
+            if(targetNode.left != null) {
+                if(parentNode != null) {
+                    if (parentNode.left.value == value) {
+                        parentNode.left = targetNode.left;
+                    } else {
+                        parentNode.right = targetNode.left;
+                    }
+                // 删除的是根节点
+                } else {
+                    root = targetNode.left;
+                }
+            } else {
+                if(parentNode != null) {
+                    if (parentNode.left.value == value) {
+                        parentNode.left = targetNode.right;
+                    } else {
+                        parentNode.right = targetNode.right;
+                    }
+                } else {
+                    root = targetNode.right;
+                }
+            }
+        }
+    }
+}
+
+// 节点类
+// 查找节点
+public Node search(int value){
+    if(value == this.value) {
+        return this;
+    } else if (value < this.value) {
+        if (this.left == null) {
+            return null;
+        }
+        return this.left.search(value);
+    } else {
+        if (this.right == null) {
+            return null;
+        }
+        return this.right.search(value);
+    }
+}
+// 查找节点的父节点
+public Node searchParent(int value) {
+    if((this.left != null && this.left.value == value) || 
+    (this.right != null && this.right.value == value)) {
+        return this;
+    } else {
+        // 如果当前节点比目标节点大 向左递归
+        if (value < this.value && this.left != null) {
+            return this.left.searchParent(value);
+        // 如果当前节点比目标节点小 向右递归
+        } else if (value >= this.value && this.right != null) {
+            return this.right.searchParent(value);
+        } else {
+            return null;
+        }
+    }
+}
+```
+### 平衡二叉树 AVL
+- 如果最小数为根节点，那么二叉排序树所有左子节点为空，降低了查询效率
+- 又称平衡二叉搜索树
+    - 它是一棵空树或它的左右两个子树的高度差的绝对值不超过1，并且左右两个子树都是一颗平衡二叉树
+    - 实现方法：
+        - 红黑树
+        - AVL算法
+        - 替罪羊树
+
+```java
+// 节点类中
+// 左子树的高度
+public int leftHeight() {
+    if (left == null) {
+        return 0;
+    }
+    return left.height();
+}
+// 右子树的高度
+public int rightHeight() {
+    if (right == null) {
+        return 0;
+    }
+    return right.height();
+}
+// 递归获得树的高度
+public int height() {
+    return Math.max(left == null ? 0 : left.height(),
+            right == null ? 0 : right.height()) + 1;
+}
+```
+![leftrotate](img\leftrotate.gif)
+```java
+// 节点类中
+// 左旋转
+private void leftRotate() {
+    Node newNode = new Node(value); // 图中 E
+    // 新节点的左子树设置成当前节点的左子树
+    newNode.left = left;            // 图中 less than E
+    // 新节点的右子树设置成当前节点的右子树的左子树
+    newNode.right = right.left;     // 图中 between E and S
+    // 把当前结点的值替换为右子节点的值
+    value = right.value;            // 图中 S
+    // 把当前右子节点替换为右子节点的右子节点
+    right = right.right;            // 图中 greater than S
+    // 把当前左子节点替换成新节点
+    left = newNode;
+}
+// 右旋转
+private void rightRotate() {
+    Node newNode = new Node(value);
+    newNode.right = right;
+    newNode.left = left.right;
+    value = left.value;
+    right = newNode;
+    left = left.left;
+}
+```
+```java
+// 节点类中
+// 添加
+public void add(Node node) {
+    ...
+    // 当添加完一个节点后，如果 右子树的高度-左子树高度 > 1，左旋转
+    if (rightHeight() - leftHeight() > 1) {
+        // 如果 右子节点的左子树高度>右子节点的右子树高度
+        if (right != null && right.leftHeight() > right.rightHeight()) {
+            // 先对右子树进行右旋转
+            right.rightRotate();
+            // 再对当前节点进行左旋转
+            leftRotate();
+        }else {
+            leftRotate();
+        }
+        // 当添加完一个节点后，如果 左子树的高度-右子树高度 > 1，右旋转
+    } else if (leftHeight() - rightHeight() > 1) {
+        // 如果 左子节点的右子树高度>左子节点的左子树高度
+        if (left != null && left.rightHeight() > left.leftHeight()) {
+            // 先对左子树进行左旋转
+            left.leftRotate();
+            // 再对当前节点进行右旋转
+            rightRotate();
+        } else {
+            rightRotate();
+        }
+    }
+}
+```
+### 多路查找树

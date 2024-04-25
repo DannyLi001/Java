@@ -1,7 +1,10 @@
 package DataStructure;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -12,17 +15,143 @@ public class HuffmanCode {
         String content = "i like like like java do you like a java";
         byte[] contentBytes = content.getBytes();
         byte[] huffmanZip = huffmanZip(contentBytes);
-        
-        
+
+        byte[] sourceBytes = decode(huffmanCodes, huffmanZip);
+        System.out.println(new String(sourceBytes));
+    }
+
+    public static void unzipFile(String zipFile, String dstFile) {
+        FileInputStream fis = null;
+        FileOutputStream fos = null;
+        ObjectInputStream ois = null;
+        try {
+            fis = new FileInputStream(zipFile);
+            ois = new ObjectInputStream(fis);
+            byte[] huffmanBytes = (byte[]) ois.readObject();
+            Map<Byte, String> huffmanCodes = (Map<Byte, String>) ois.readObject();
+            byte[] bytes = decode(huffmanCodes, huffmanBytes);
+            fos = new FileOutputStream(dstFile);
+            fos.write(bytes);
+
+        } catch (Exception e) {
+            // TODO: handle exception
+        } finally {
+            try {
+                fos.close();
+                ois.close();
+                fis.close();
+            } catch (Exception e) {
+                // TODO: handle exception
+            }
+        }
+    }
+
+    public static void zipFile(String srcFile, String dstFile) {
+        FileInputStream fis = null;
+        FileOutputStream fos = null;
+        ObjectOutputStream oos = null;
+        try {
+            // 创建文件输入流
+            fis = new FileInputStream(srcFile);
+            // 创建一个和源文件大小一样的byte[]
+            byte[] b = new byte[fis.available()];
+            // 读取文件
+            fis.read(b);
+            // 对文件压缩
+            byte[] huffmanBytes = huffmanZip(b);
+            // 创建文件输出流，存放压缩文件
+            fos = new FileOutputStream(dstFile);
+            // 使用ObjectOutputStream输出
+            oos = new ObjectOutputStream(fos);
+            oos.writeObject(huffmanBytes);
+            // 存放赫夫曼编码表
+            oos.writeObject(huffmanCodes);
+        } catch (Exception e) {
+            // TODO: handle exception
+        } finally {
+            try {
+                fis.close();
+                fos.close();
+                oos.close();
+            } catch (Exception e) {
+                // TODO: handle exception
+            }
+        }
+    }
+
+    /**
+     * 对压缩文件解码
+     * 
+     * @param huffmanCodes 赫夫曼编码表
+     * @param huffmanBytes 赫夫曼编码字节数组
+     * @return 原来的字符串对应数组
+     */
+    private static byte[] decode(Map<Byte, String> huffmanCodes, byte[] huffmanBytes) {
+        StringBuilder stringBuilder = new StringBuilder();
+        for (int i = 0; i < huffmanBytes.length; i++) {
+            stringBuilder.append(byteToBitString(i != huffmanBytes.length - 1, huffmanBytes[i]));
+        }
+        // 编码表转解码表
+        Map<String, Byte> map = new HashMap<>();
+        for (Map.Entry<Byte, String> entry : huffmanCodes.entrySet()) {
+            map.put(entry.getValue(), entry.getKey());
+        }
+        // 把字符串按照赫夫曼解码表进行解码
+        ArrayList<Byte> list = new ArrayList<>();
+        for (int i = 0; i < stringBuilder.length();) {
+            int count = 1;
+            boolean flag = true;
+            Byte b = null;
+
+            while (flag) {
+                String key = stringBuilder.substring(i, i + count);
+                b = map.get(key);
+                if (b == null) {
+                    count++;
+                } else {
+                    flag = false;
+                }
+            }
+            list.add(b);
+            i += count;
+        }
+        byte[] b = new byte[list.size()];
+        for (int i = 0; i < b.length; i++) {
+            b[i] = list.get(i);
+        }
+        return b;
+    }
+
+    /**
+     * 将一个byte转成一个二进制的字符串
+     * 
+     * @param flag 表示是否需要补高位，最后字节无需补高位
+     * @param b    传入的byte
+     * @return 对应的二进制字符串（补码形式）
+     */
+    private static String byteToBitString(boolean flag, byte b) {
+        int temp = b;
+        if (flag) {
+            // 按位与256 1 0000 0000 | 0000 0001 => 1 0000 0001
+            temp |= 256;
+        }
+        // 返回的是temp对应的二进制的补码 4bytes 16bits
+        String str = Integer.toBinaryString(temp);
+        if (flag) {
+            return str.substring(str.length() - 8);
+        } else {
+            return str;
+        }
     }
 
     /**
      * 使用一个方法，将前面的方法封装
+     * 
      * @param bytes 原始的字符串对应的字节数组
-     * @return      经过赫夫曼编码处理后的字节数组
+     * @return 经过赫夫曼编码处理后的字节数组
      */
     private static byte[] huffmanZip(byte[] bytes) {
-        // 给每个字节创建节点 
+        // 给每个字节创建节点
         List<Node1> Node1s = getNode1s(bytes);
         // 创建赫夫曼树
         Node1 head = createHuffmanTree(Node1s);
